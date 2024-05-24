@@ -13,14 +13,14 @@ async function main() {
   const zokrates = await initialize();
 
   const source = await fs.readFile("./circuits/main.zok", "utf-8");
-  const { program } = zokrates.compile(source);
+  const artifacts = zokrates.compile(source);
 
-  const { vk, pk } = zokrates.setup(program);
+  const { vk, pk } = zokrates.setup(artifacts.program);
   const verifier = zokrates.exportSolidityVerifier(vk);
 
   await fs.writeFile(
-    "./circuits/program.json",
-    toJson({ program: toHex(program) }),
+    "./circuits/artifacts.json",
+    toJson({ ...artifacts, program: toHex(artifacts.program) }),
   );
   await fs.writeFile("./circuits/keypair.json", toJson({ vk, pk: toHex(pk) }));
   await fs.writeFile("./circuits/Verifier.sol", verifier);
