@@ -9,12 +9,10 @@ import TextField from '@mui/material/TextField';
 import { CardActionArea } from '@mui/material';
 import { encodeBase32 } from 'geohashing';
 import React, { useCallback, useEffect } from 'react';
+import { ethers } from 'ethers';
 
-interface LocationResult {
-    lat: string,
-    lon: string,
-    entropy: string,
-    name: string
+interface OwnerResult {
+    owner: string
 }
 
 export interface Props {
@@ -22,24 +20,20 @@ export interface Props {
     handleSelect: (entropy: string) => void
 }
 
-export default function LocationDialog({ open, handleSelect }: Props): JSX.Element {
+export default function OwnerDialog({ open, handleSelect }: Props): JSX.Element {
     const [query, setQuery] = React.useState("")
-    const [results, setResults] = React.useState<Array<LocationResult>>([])
+    const [results, setResults] = React.useState<Array<OwnerResult>>([])
 
     const fetchResults = useCallback(async(query: string) => {
         if (!query) return
-        const searchParams = new URLSearchParams({
-            format: "json",
-            q: query
-        })
-        const rawResp = await fetch("https://nominatim.openstreetmap.org/search?" + searchParams)
-        const jsonResp = await rawResp.json()
-        setResults(jsonResp.map((result: any) => { return {
-            lat: result.lat,
-            lon: result.lon,
-            entropy: encodeBase32(result.lat, result.lon, 7),
-            name: result.display_name
-        }}))
+        
+        setResults([])
+        try {
+            const result = ethers.getAddress(query)
+            setResults([{owner: result}])
+        } catch(e) {
+            console.log(e)
+        }
     }, [setResults])
 
     useEffect(() => {
@@ -56,11 +50,11 @@ export default function LocationDialog({ open, handleSelect }: Props): JSX.Eleme
             aria-describedby="alert-dialog-description"
         >
             <DialogTitle id="alert-dialog-title">
-                {"Setup entropy with location"}
+                {"Setup address"}
             </DialogTitle>
             <DialogContent style={{ padding: "8px" }}>
                 <TextField 
-                    label="Search Location"
+                    label="Owner Address"
                     variant="standard"
                     value={query}
                     onChange={ (e) => setQuery(e.target.value)}
@@ -72,9 +66,9 @@ export default function LocationDialog({ open, handleSelect }: Props): JSX.Eleme
                 {results.map((result) => (
                     <Card style={{ margin: "8px" }}>
                         <CardActionArea onClick={ () => 
-                            handleSelect(result.entropy)
+                            handleSelect(result.owner)
                         }>
-                            <CardContent>{result.name}</CardContent>   
+                            <CardContent>{result.owner}</CardContent>   
                         </CardActionArea>
                     </Card>
                 ))}

@@ -7,6 +7,7 @@ import keypairJson from './config/keypair.json'
 import { Abi, CompilationArtifacts, initialize } from "zokrates-js";
 import LocationDialog from './setup/LocationDialog';
 import { Typography } from '@mui/material';
+import OwnerDialog from './setup/OwnerDialog';
 
 interface PersistedArtifact {
   program: string,
@@ -42,24 +43,38 @@ const createProof = async (account: string) => {
 }
 
 function App() {
+  const [showOwnerDialog, setShowOwnersDialog] = useState(false)
   const [showLocationDialog, setShowLocationDialog] = useState(false)
+  const [owner, setOwner] = useState(localStorage.getItem("owner"))
   const [entropy, setEntropy] = useState(localStorage.getItem("entropy"))
   useEffect(() => {
-    setShowLocationDialog(!entropy)
-  }, [entropy])
+    setShowOwnersDialog(false)
+    setShowLocationDialog(false)
+    if (!owner)
+      setShowOwnersDialog(true)
+    else if (!entropy)
+      setShowLocationDialog(true)
+  }, [owner, entropy])
   const clearEntropy = useCallback(() => {
     localStorage.removeItem("entropy")
     setEntropy("")
   }, [setEntropy])
+  const clearOwner = useCallback(() => {
+    localStorage.removeItem("owner")
+    setOwner("")
+  }, [setOwner])
   return (
     <div className="App">
       <LocationDialog open={showLocationDialog} handleSelect={(entropy) => {
-        setShowLocationDialog(false)
-        console.log(entropy)
         localStorage.setItem("entropy", entropy)
         setEntropy(entropy)
       }}/>
+      <OwnerDialog open={showOwnerDialog} handleSelect={(owner) => {
+        localStorage.setItem("owner", owner)
+        setOwner(owner)
+      }}/>
       {!!entropy && (<Typography>Selected Entropy: {entropy} (<a onClick={clearEntropy}>clear</a>)</Typography>)}
+      {!!owner && (<Typography>Selected Owner: {owner} (<a onClick={clearOwner}>clear</a>)</Typography>)}
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
