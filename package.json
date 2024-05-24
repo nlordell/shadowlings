@@ -3,6 +3,7 @@
   "license": "GPL-3.0-only",
   "private": true,
   "scripts": {
-    "circuits:build": "node ./circuits/build.js"
+    "circuits:build": "node ./circuits/build.js",
+    "contracts:test": "make -C contracts test"
   }
 }

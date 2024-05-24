@@ -1,0 +1,10 @@
+[profile.default]
+src = "src"
+out = "artifacts"
+libs = ["lib"]
+remappings = [
+    "forge-std/=lib/forge-std/src/",
+]
+
+[rpc_endpoints]
+  otim = "http://devnet.otim.xyz"
