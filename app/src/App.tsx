@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import logo from './logo.svg';
 import { ethers } from 'ethers';
 import './App.css';
@@ -6,6 +6,7 @@ import artifactJson from './config/artifacts.json'
 import keypairJson from './config/keypair.json'
 import { Abi, CompilationArtifacts, initialize } from "zokrates-js";
 import LocationDialog from './setup/LocationDialog';
+import { Typography } from '@mui/material';
 
 interface PersistedArtifact {
   program: string,
@@ -41,12 +42,24 @@ const createProof = async (account: string) => {
 }
 
 function App() {
+  const [showLocationDialog, setShowLocationDialog] = useState(false)
+  const [entropy, setEntropy] = useState(localStorage.getItem("entropy"))
   useEffect(() => {
-    createProof("")
-  }, [])
+    setShowLocationDialog(!entropy)
+  }, [entropy])
+  const clearEntropy = useCallback(() => {
+    localStorage.removeItem("entropy")
+    setEntropy("")
+  }, [setEntropy])
   return (
     <div className="App">
-      <LocationDialog open={true} handleSelect={(entropy) => { console.log(entropy)}}/>
+      <LocationDialog open={showLocationDialog} handleSelect={(entropy) => {
+        setShowLocationDialog(false)
+        console.log(entropy)
+        localStorage.setItem("entropy", entropy)
+        setEntropy(entropy)
+      }}/>
+      {!!entropy && (<Typography>Selected Entropy: {entropy} (<a onClick={clearEntropy}>clear</a>)</Typography>)}
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>

@@ -43,6 +43,9 @@ importers:
       ethers:
         specifier: ^6.12.1
         version: 6.12.1
+      geohashing:
+        specifier: ^1.1.4
+        version: 1.1.4
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -2963,6 +2966,9 @@ packages:
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
+
+  geohashing@1.1.4:
+    resolution: {integrity: sha512-i5pmtQBLusXQgGxOEpJg/yd0RiaHBXFtA2lOxq9L/6Eu1/K0w0q5NrL5aA86xkrJzcwjqHUzijb16UOL7Yh1kg==}
 
   get-caller-file@2.0.5:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
@@ -9261,6 +9267,8 @@ snapshots:
   functions-have-names@1.2.3: {}
 
   gensync@1.0.0-beta.2: {}
+
+  geohashing@1.1.4: {}
 
   get-caller-file@2.0.5: {}
 

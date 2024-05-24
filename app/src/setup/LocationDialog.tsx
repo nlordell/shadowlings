@@ -7,6 +7,7 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import TextField from '@mui/material/TextField';
 import { CardActionArea } from '@mui/material';
+import { encodeBase32 } from 'geohashing';
 import React, { useCallback, useEffect } from 'react';
 
 interface LocationResult {
@@ -26,6 +27,7 @@ export default function LocationDialog({ open, handleSelect }: Props): JSX.Eleme
     const [results, setResults] = React.useState<Array<LocationResult>>([])
 
     const fetchResults = useCallback(async(query: string) => {
+        if (!query) return
         const searchParams = new URLSearchParams({
             format: "json",
             q: query
@@ -35,10 +37,9 @@ export default function LocationDialog({ open, handleSelect }: Props): JSX.Eleme
         setResults(jsonResp.map((result: any) => { return {
             lat: result.lat,
             lon: result.lon,
-            entropy: result.lat + result.lon,
+            entropy: encodeBase32(result.lat, result.lon, 7),
             name: result.display_name
         }}))
-        console.log()
     }, [setResults])
 
     useEffect(() => {
