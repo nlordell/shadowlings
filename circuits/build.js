@@ -19,11 +19,11 @@ async function main() {
   const verifier = zokrates.exportSolidityVerifier(vk);
 
   await fs.writeFile(
-    "./circuits/artifacts.json",
+    "./app/src/config/artifacts.json",
     toJson({ ...artifacts, program: toHex(artifacts.program) }),
   );
-  await fs.writeFile("./circuits/keypair.json", toJson({ vk, pk: toHex(pk) }));
-  await fs.writeFile("./circuits/Verifier.sol", verifier);
+  await fs.writeFile("./app/src/config/keypair.json", toJson({ vk, pk: toHex(pk) }));
+  await fs.writeFile("./contracts/src/Verifier.sol", verifier);
 }
 
 main().catch((err) => console.error(err));
