@@ -8,6 +8,7 @@ import { Abi, CompilationArtifacts, initialize } from "zokrates-js";
 import LocationDialog from './setup/LocationDialog';
 import { Typography } from '@mui/material';
 import OwnerDialog from './setup/OwnerDialog';
+import ShadowList from './shadows/ShadowList';
 
 interface PersistedArtifact {
   program: string,
@@ -75,20 +76,7 @@ function App() {
       }}/>
       {!!entropy && (<Typography>Selected Entropy: {entropy} (<a onClick={clearEntropy}>clear</a>)</Typography>)}
       {!!owner && (<Typography>Selected Owner: {owner} (<a onClick={clearOwner}>clear</a>)</Typography>)}
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {!!entropy && !!owner && (<ShadowList owner={owner} entropy={entropy} />)}
     </div>
   );
 }
