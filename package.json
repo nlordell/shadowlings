@@ -1,13 +1,8 @@
 {
-  "name": "shadowlings",
+  "name": "@shadowlings/shadowlings",
   "license": "GPL-3.0-only",
   "private": true,
-  "type": "module",
   "scripts": {
-    "circuits:build": "node ./circuits/build.js",
-    "test": "echo \"All tests passed!\" && exit 0"
-  },
-  "dependencies": {
-    "zokrates-js": "^1.1.9"
+    "circuits:build": "node ./circuits/build.js"
   }
 }

@@ -6,7 +6,9 @@ settings:
 
 importers:
 
-  .:
+  .: {}
+
+  circuits:
     dependencies:
       zokrates-js:
         specifier: ^1.1.9

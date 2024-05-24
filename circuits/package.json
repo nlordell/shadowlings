@@ -1,0 +1,9 @@
+{
+  "name": "@shadowlings/circuits",
+  "license": "GPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "zokrates-js": "^1.1.9"
+  }
+}
