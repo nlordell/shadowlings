@@ -5,6 +5,7 @@ import './App.css';
 import artifactJson from './config/artifacts.json'
 import keypairJson from './config/keypair.json'
 import { Abi, CompilationArtifacts, initialize } from "zokrates-js";
+import LocationDialog from './setup/LocationDialog';
 
 interface PersistedArtifact {
   program: string,
@@ -45,6 +46,7 @@ function App() {
   }, [])
   return (
     <div className="App">
+      <LocationDialog open={true} handleSelect={(entropy) => { console.log(entropy)}}/>
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
