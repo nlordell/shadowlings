@@ -4,6 +4,7 @@ out = "artifacts"
 libs = ["lib"]
 remappings = [
     "forge-std/=lib/forge-std/src/",
+    "account-abstraction/=lib/account-abstraction/contracts/",
 ]
 
 [rpc_endpoints]

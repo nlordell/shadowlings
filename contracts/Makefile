@@ -16,6 +16,15 @@ foundry:
 		ghcr.io/paradigmxyz/foundry-alphanet:latest \
 		--foundry-command "$(CMD)"
 
+.PHONY: fmt
+fmt:
+	docker run --rm \
+		-v $$(pwd):/contracts:z \
+		-w /contracts \
+		--entrypoint /bin/bash \
+		ghcr.io/paradigmxyz/foundry-alphanet:latest \
+		-c 'forge fmt src/Shadowlings.sol test/'
+
 .PHONY: install
 install:
 	git submodule update --init --recursive
