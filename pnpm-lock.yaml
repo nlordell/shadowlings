@@ -1,0 +1,29 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      zokrates-js:
+        specifier: ^1.1.9
+        version: 1.1.9
+
+packages:
+
+  pako@2.1.0:
+    resolution: {integrity: sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==}
+
+  zokrates-js@1.1.9:
+    resolution: {integrity: sha512-Z5GyrSkV2SzeB/Im2jV6z4LokRAY+G4O8U81zdgjHpgm62p1XLEfiCjkAIrkHDLGij/EH/ETlHpZtoRYYoSp7g==}
+
+snapshots:
+
+  pako@2.1.0: {}
+
+  zokrates-js@1.1.9:
+    dependencies:
+      pako: 2.1.0
