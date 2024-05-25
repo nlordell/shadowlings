@@ -9,6 +9,7 @@ import {IAccount, PackedUserOperation} from "account-abstraction/interfaces/IAcc
 
 import {Verifier} from "./verifiers/main/Verifier.sol";
 import {Verifier as RecoveryVerifier} from "./verifiers/recovery/Verifier.sol";
+import {Verifier as RegisterVerifier} from "./verifiers/register/Verifier.sol";
 
 contract Shadowlings is IAccount, Verifier {
     bytes32 public constant DOMAIN_TYPEHASH = keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
@@ -19,6 +20,7 @@ contract Shadowlings is IAccount, Verifier {
 
     address public immutable ENTRY_POINT;
     RecoveryVerifier public immutable RECOVERY;
+    RegisterVerifier public immutable REGISTER;
 
     mapping(uint256 => bool) public nullified;
 
@@ -33,18 +35,12 @@ contract Shadowlings is IAccount, Verifier {
     constructor(address entryPoint) {
         ENTRY_POINT = entryPoint;
         RECOVERY = new RecoveryVerifier();
+        REGISTER = new RegisterVerifier();
     }
 
     modifier onlyEntryPoint() {
         if (msg.sender != ENTRY_POINT) {
             revert UnsupportedEntryPoint();
-        }
-        _;
-    }
-
-    modifier onlySupportedCall(PackedUserOperation calldata userOp) {
-        if (bytes4(userOp.callData[:4]) != this.execute.selector) {
-            revert UnsupportedCall();
         }
         _;
     }
@@ -60,34 +56,41 @@ contract Shadowlings is IAccount, Verifier {
         external
         view
         onlyEntryPoint
-        onlySupportedCall(userOp)
         onlyWithoutPrefund(missingAccountFunds)
         returns (uint256 validationData)
     {
-        (uint256 commit) = abi.decode(userOp.callData[4:], (uint256));
-        (uint256 nullifier, Proof memory proof) = abi.decode(userOp.signature, (uint256, Proof));
+        bool success;
 
-        if (verifyProof(commit, nullifier, userOpHash, proof)) {
+        bytes4 selector = bytes4(userOp.callData[:4]);
+        if (selector == this.execute.selector) {
+            (uint256 commit) = abi.decode(userOp.callData[4:], (uint256));
+            (uint256 nullifier, Proof memory proof) = abi.decode(userOp.signature, (uint256, Proof));
+            success = verifyProof(commit, nullifier, userOpHash, proof);
+        } else if (selector == this.register.selector) {
+            (uint256 commit, uint256 saltHash) = abi.decode(userOp.callData[4:], (uint256, uint256));
+            (RegisterVerifier.Proof memory proof) = abi.decode(userOp.signature, (RegisterVerifier.Proof));
+            success = verifyRegisterProof(commit, saltHash, proof);
+        } else {
+            revert UnsupportedCall();
+        }
+
+        if (success) {
             validationData = SIG_VALIDATION_SUCCESS;
         } else {
             validationData = SIG_VALIDATION_FAILED;
         }
     }
 
-    function execute(uint256 commit, address token, address to, uint256 amount, uint256 recoverySaltHash)
-        public
+    function execute(uint256 commit, address token, address to, uint256 amount)
+        external
         onlyEntryPoint
         returns (bool success)
     {
-        // Optionally, record a `saltHash` for recovery flows. This is quite
-        // hacky at the moment, ideally we would have a separate `register`
-        // function for registering recovery with its own proof that of salt
-        // hash and commit. Will do if there is enough time in the end.
-        if (recoverySaltHash != 0) {
-            emit RecoverySaltHash(getShadowling(commit), recoverySaltHash);
-        }
-
         success = _execute(commit, token, to, amount);
+    }
+
+    function register(uint256 commit, uint256 saltHash) external onlyEntryPoint returns (bool success) {
+        emit RecoverySaltHash(getShadowling(commit), saltHash);
     }
 
     function executeWithProof(
@@ -181,6 +184,15 @@ contract Shadowlings is IAccount, Verifier {
     {
         uint256[3] memory input = [commit, uint256(uint160(owner)), saltHash];
         success = RECOVERY.verifyTx(proof, input);
+    }
+
+    function verifyRegisterProof(uint256 commit, uint256 saltHash, RegisterVerifier.Proof memory proof)
+        public
+        view
+        returns (bool success)
+    {
+        uint256[2] memory input = [commit, saltHash];
+        success = REGISTER.verifyTx(proof, input);
     }
 
     function _execute(uint256 commit, address token, address to, uint256 amount) internal returns (bool success) {

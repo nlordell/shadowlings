@@ -29,6 +29,7 @@ async function main() {
 
   await setup(zokrates, "main");
   await setup(zokrates, "recovery");
+  await setup(zokrates, "register");
 }
 
 main().catch((err) => console.error(err));

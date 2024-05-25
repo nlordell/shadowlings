@@ -1,0 +1,23 @@
+import "hashes/mimcSponge/mimcSponge";
+
+const field PEPPER = 42;
+
+def mimc(field a, field b) -> field {
+    field[1] out = mimcSponge([a, b], 0);
+    return out[0];
+}
+
+def main(
+    public field expected_commit_hash,
+    public field expected_salt_hash,
+    private field owner_hash,
+    private field salt
+) {
+    field salt_hash = mimc(salt, PEPPER);
+    assert(salt_hash == expected_salt_hash);
+
+    field commit_hash = mimc(owner_hash, salt_hash);
+    assert(commit_hash == expected_commit_hash);
+
+    return;
+}

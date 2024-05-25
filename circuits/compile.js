@@ -18,6 +18,7 @@ async function main() {
 
   await compile(zokrates, "main");
   await compile(zokrates, "recovery");
+  await compile(zokrates, "register");
 }
 
 main().catch((err) => console.error(err));

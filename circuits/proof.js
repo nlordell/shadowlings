@@ -55,6 +55,7 @@ async function main() {
   const circuits = {
     main: await load("main"),
     recovery: await load("recovery"),
+    register: await load("register"),
   };
 
   const ownerHash = mimc(owner, entropy);
@@ -77,6 +78,14 @@ async function main() {
     owner,
     saltHash,
     entropy,
+  ]);
+
+  console.log("### REGISTER ###");
+  proove(zokrates, circuits.register, [
+    commitHash,
+    saltHash,
+    ownerHash,
+    salt,
   ]);
 }
 

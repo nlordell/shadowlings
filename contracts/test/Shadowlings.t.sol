@@ -4,9 +4,10 @@ pragma solidity ^0.8.13;
 import {PackedUserOperation, UserOperationLib} from "account-abstraction/core/UserOperationLib.sol";
 import {Test, console} from "forge-std/Test.sol";
 
-import {Shadowlings, Verifier, RecoveryVerifier} from "../src/Shadowlings.sol";
+import {Shadowlings, Verifier, RecoveryVerifier, RegisterVerifier} from "../src/Shadowlings.sol";
 import {Pairing} from "../src/verifiers/main/Verifier.sol";
 import {Pairing as RecoveryPairing} from "../src/verifiers/recovery/Verifier.sol";
+import {Pairing as RegisterPairing} from "../src/verifiers/register/Verifier.sol";
 
 contract ShadowlingsTest is Test {
     address entryPoint = vm.addr(uint256(keccak256("secret")));
@@ -27,7 +28,7 @@ contract ShadowlingsTest is Test {
         assertEq(shadowling.balance, 1 ether);
 
         vm.prank(entryPoint);
-        shadowlings.execute(commit, token, to, amount, 0);
+        shadowlings.execute(commit, token, to, amount);
 
         assertEq(to.balance, 1 ether);
         assertEq(shadowling.balance, 0);
@@ -40,7 +41,7 @@ contract ShadowlingsTest is Test {
         address to = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
         uint256 amount = 1 ether;
 
-        bytes memory callData = abi.encodeCall(shadowlings.execute, (commit, token, to, amount, 0));
+        bytes memory callData = abi.encodeCall(shadowlings.execute, (commit, token, to, amount));
         bytes memory signature = abi.encode(nullifier, proof);
 
         PackedUserOperation memory userOp = PackedUserOperation({
@@ -64,10 +65,34 @@ contract ShadowlingsTest is Test {
 
         vm.startPrank(entryPoint);
         require(shadowlings.validateUserOp(userOp, userOpHash, 0) == 0);
-        shadowlings.execute(commit, token, to, amount, 0);
+        shadowlings.execute(commit, token, to, amount);
 
         assertEq(to.balance, 1 ether);
         assertEq(shadowling.balance, 0);
+    }
+
+    function test_RegisterSaltNonce() public {
+        (uint256 commit, uint256 saltHash, RegisterVerifier.Proof memory proof) = _sampleRegisterProof();
+
+        bytes memory callData = abi.encodeCall(shadowlings.register, (commit, saltHash));
+        bytes memory signature = abi.encode(proof);
+
+        PackedUserOperation memory userOp = PackedUserOperation({
+            sender: address(shadowlings),
+            nonce: 0,
+            initCode: "",
+            callData: callData,
+            accountGasLimits: 0,
+            preVerificationGas: 0,
+            gasFees: 0,
+            paymasterAndData: "",
+            signature: signature
+        });
+        bytes32 userOpHash = bytes32(0);
+
+        vm.startPrank(entryPoint);
+        require(shadowlings.validateUserOp(userOp, userOpHash, 0) == 0);
+        shadowlings.register(commit, saltHash);
     }
 
     function test_VerifyProof() public view {
@@ -82,6 +107,14 @@ contract ShadowlingsTest is Test {
         (uint256 commit, address owner, uint256 saltHash, RecoveryVerifier.Proof memory proof) = _sampleRecoveryProof();
 
         bool success = shadowlings.verifyRecoveryProof(commit, owner, saltHash, proof);
+
+        assertTrue(success);
+    }
+
+    function test_VerifyRegisterProof() public view {
+        (uint256 commit, uint256 saltHash, RegisterVerifier.Proof memory proof) = _sampleRegisterProof();
+
+        bool success = shadowlings.verifyRegisterProof(commit, saltHash, proof);
 
         assertTrue(success);
     }
@@ -162,6 +195,34 @@ contract ShadowlingsTest is Test {
         proof.c = RecoveryPairing.G1Point(
             0x0b4d4fb90134e330ff21ba7f620c500a99d5a167e2952be2ec732006cac4a8d4,
             0x24b613acc40113dd9a637c4998f32df956555e38a92a834cce03003a662bd163
+        );
+    }
+
+    function _sampleRegisterProof()
+        internal
+        pure
+        returns (uint256 commit, uint256 saltHash, RegisterVerifier.Proof memory proof)
+    {
+        commit = 0x153c333c4856f04f11c983484a8fbcd2705b4460498f55b4771cd09af3c306ab;
+        saltHash = 0x0167d79660812409fa2f73c39d3b34cd1dd77b81f2e5b065c2411a7535f2f740;
+
+        proof.a = RegisterPairing.G1Point(
+            0x02d2c2a7a6dcb60ebd1891e220ff77fceabc7e8089ce97654520d3b3a1c87b50,
+            0x0eb0c050d3050f129acfa6ff3102fb3c93f98c1b4e7212ace0e20508ce3de9ec
+        );
+        proof.b = RegisterPairing.G2Point(
+            [
+                0x2f26419c266e40b538f46f99f2d1941b5c1ed0224c224cb9e7f80875c7b5b8c0,
+                0x22981cf08f4448d6c144761f29d9cc52a475c2fa52751ee113aae837433c5a22
+            ],
+            [
+                0x28fb254cc8479330d668aa4c9ab1132f41149240a603651f392d1099d7411553,
+                0x122f1e0781b8738d1abde3f4da5fff1af4059d430e125118834570261b51f3ee
+            ]
+        );
+        proof.c = RegisterPairing.G1Point(
+            0x067725d6b6de9dddd40d4924f9cd87a44b25db246fa12b77499fb0ec6d22c035,
+            0x0e06ddd2bd93374bbe650301a465e433b093ca0c02d78d9da95eb130dbffddb3
         );
     }
 }
