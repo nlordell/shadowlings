@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "circomlibjs": "^0.1.7",
     "zokrates-js": "^1.1.9"
   }
 }

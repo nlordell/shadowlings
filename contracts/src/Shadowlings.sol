@@ -155,7 +155,7 @@ contract Shadowlings is IAccount, Verifier {
         authority = ecrecover(authMessage, v, r, s);
     }
 
-    function verifyProof(uint256 commit, uint256 nullifier, bytes32 txHash, Proof memory proof)
+    function verifyProof(uint256 commit, uint256 nullifier, bytes32 executionHash, Proof memory proof)
         public
         view
         returns (bool success)
@@ -163,10 +163,9 @@ contract Shadowlings is IAccount, Verifier {
         uint256[] memory input = new uint256[](3);
         input[0] = commit;
         input[1] = nullifier;
-        input[2] = _fieldify(txHash);
+        input[2] = _fieldify(executionHash);
 
-        //success = verify(input, proof) == 0;
-        success = verify(input, proof) != 0; // just for testing...
+        success = verify(input, proof) == 0;
     }
 
     function _fieldify(bytes32 value) internal pure returns (uint256 field) {

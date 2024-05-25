@@ -1,13 +1,7 @@
 import { promises as fs } from "fs";
 import { initialize } from "zokrates-js";
 
-function toHex(a) {
-  return `0x${Buffer.from(a).toString("hex")}`;
-}
-
-function toJson(o) {
-  return `${JSON.stringify(o, undefined, 2)}\n`;
-}
+import { toHex, toJson } from "./util.js";
 
 async function main() {
   const zokrates = await initialize();
@@ -22,7 +16,10 @@ async function main() {
     "./app/src/config/artifacts.json",
     toJson({ ...artifacts, program: toHex(artifacts.program) }),
   );
-  await fs.writeFile("./app/src/config/keypair.json", toJson({ vk, pk: toHex(pk) }));
+  await fs.writeFile(
+    "./app/src/config/keypair.json",
+    toJson({ vk, pk: toHex(pk) }),
+  );
   await fs.writeFile("./contracts/src/Verifier.sol", verifier);
 }
 
