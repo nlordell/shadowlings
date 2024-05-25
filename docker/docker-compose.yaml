@@ -1,6 +1,15 @@
 version: '3.8'
 
 services:
+  node:
+    image: ghcr.io/paradigmxyz/foundry-alphanet:latest
+    restart: always
+    command:
+      - --foundry-command
+      - anvil
+    ports:
+      - 8545:8545
+
   bundler:
     build:
       context: .
@@ -9,11 +18,11 @@ services:
     command:
       - --auto
       - --unsafe
-      - --network=http://devnet.otim.xyz/
-      - --mnemonic=/data/bundler/mnemonic.txt
+      - --network=http://node:8545
+      - --mnemonic=/data/mnemonic.txt
     environment:
       DEBUG: 'aa.exec,aa.exec.cron,aa.events,aa.mempool'
     ports:
       - 3000:3000
     volumes:
-      - ./data:/data
+      - ./data/bundler:/data

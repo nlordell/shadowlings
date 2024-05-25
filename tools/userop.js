@@ -32,7 +32,7 @@ async function main() {
   const amount = ethers.parseEther(options.amount);
 
   const provider = new ethers.JsonRpcProvider(
-    options.rpcUrl ?? "http://devnet.otim.xyz",
+    options.rpcUrl ?? "http://localhost:8545",
   );
   const bundler = new Bundler(
     options.bundlerUrl ?? "http://localhost:3000/rpc",
