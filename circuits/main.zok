@@ -1,4 +1,25 @@
-def main(private field a, field b) {
-    assert(a * a == b);
+import "hashes/sha256/256bitPadded" as sha256_256bit;
+import "hashes/sha256/512bitPacked" as sha256_512bit;
+import "utils/pack/u32/pack128" as pack128;
+import "utils/pack/u32/unpack128" as unpack128;
+
+def main(
+    public field[2] expected_commit_hash,
+    public field[2] expected_nullifier_hash,
+    public field[2] execution_hash,
+    private field[2] salt,
+    private field[2] owner_hash
+) {
+    u32[8] salt_unpacked = [...unpack128(salt[0]), ...unpack128(salt[1])];
+    u32[8] salt_hash_unpacked = sha256_256bit(salt_unpacked);
+    field[2] salt_hash = [pack128(salt_hash_unpacked[0..4]), pack128(salt_hash_unpacked[4..8])];
+    field[2] commit_hash = sha256_512bit([...owner_hash, ...salt_hash]);
+    assert(commit_hash[0] == expected_commit_hash[0]);
+    assert(commit_hash[1] == expected_commit_hash[1]);
+
+    field[2] nullifier_hash = sha256_512bit([...execution_hash, ...salt_hash]);
+    assert(nullifier_hash[0] == expected_nullifier_hash[0]);
+    assert(nullifier_hash[1] == expected_nullifier_hash[1]);
+
     return;
 }

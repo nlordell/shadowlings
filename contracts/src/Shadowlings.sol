@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.0;
 
+import {Test, console} from "forge-std/Test.sol";
+
 import {SIG_VALIDATION_SUCCESS, SIG_VALIDATION_FAILED} from "account-abstraction/core/Helpers.sol";
 import {IAccount, PackedUserOperation} from "account-abstraction/interfaces/IAccount.sol";
 
@@ -153,17 +155,31 @@ contract Shadowlings is IAccount, Verifier {
         authority = ecrecover(authMessage, v, r, s);
     }
 
-    function verifyProof(bytes32 commit, bytes32 nullifier, bytes32 transferHash, Proof memory proof)
+    function verifyProof(bytes32 commit, bytes32 nullifier, bytes32 txHash, Proof memory proof)
         public
         view
         returns (bool success)
     {
-        uint256[] memory input = new uint256[](3);
-        input[0] = uint256(commit);
-        input[1] = uint256(nullifier);
-        input[2] = uint256(transferHash);
+        uint256[] memory input = new uint256[](6);
+        _unpack(input, 0, commit);
+        _unpack(input, 1, nullifier);
+        _unpack(input, 2, transferHash);
 
         //success = verify(input, proof) == 0;
         success = verify(input, proof) != 0; // just for testing...
+    }
+
+    function _unpack(uint256[] memory input, uint256 ordinal, bytes32 value) internal pure {
+        assembly ("memory-safe") {
+            let ptr = add(input, add(mul(ordinal, 0x40), 0x20))
+            mstore(ptr, shr(128, value))
+            mstore(add(ptr, 0x32), and(value, 0xffffffffffffffffffffffffffffffff))
+        }
+    }
+
+    function _fieldify(bytes32 value) internal pure returns (uint256 field) {
+        assembly ("memory-safe") {
+            field := and(value, 0x1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff)
+        }
     }
 }
