@@ -172,6 +172,7 @@ async function circuit(name) {
     keypair: { ...keypair, pk: fromHex(keypair.pk) },
   };
 }
+
 async function proove(name, ...inputs) {
   const zokrates = await initialize();
   const { artifacts, keypair } = await circuit(name);

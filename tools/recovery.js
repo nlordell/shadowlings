@@ -174,7 +174,11 @@ async function recover(options) {
         address token,
         address to,
         uint256 amount,
-        (uint256[2], uint256[2][2], uint256[2]) proof
+        (
+          (uint256, uint256),
+          (uint256[2], uint256[2]),
+          (uint256, uint256)
+        ) proof
       )`,
     ],
     provider,
@@ -244,6 +248,7 @@ async function circuit(name) {
     keypair: { ...keypair, pk: fromHex(keypair.pk) },
   };
 }
+
 async function proove(name, ...inputs) {
   const zokrates = await initialize();
   const { artifacts, keypair } = await circuit(name);
