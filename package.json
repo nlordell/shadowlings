@@ -6,6 +6,7 @@
     "circuits:compile": "node ./circuits/compile.js",
     "circuits:setup": "node ./circuits/setup.js",
     "circuits:proof": "node ./circuits/proof.js",
-    "contracts:test": "make -C contracts test"
+    "contracts:test": "make -C contracts test",
+    "tools:userop": "node ./tools/userop.js"
   }
 }

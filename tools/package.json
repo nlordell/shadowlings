@@ -1,0 +1,12 @@
+{
+  "name": "@shadowlings/tools",
+  "license": "GPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "circomlibjs": "^0.1.7",
+    "commander": "^12.1.0",
+    "ethers": "^6.12.1",
+    "zokrates-js": "^1.1.9"
+  }
+}
