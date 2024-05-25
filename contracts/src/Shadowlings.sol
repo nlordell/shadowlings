@@ -18,7 +18,7 @@ contract Shadowlings is IAccount, Verifier {
 
     address public immutable ENTRY_POINT;
 
-    mapping(bytes32 => bool) public nullified;
+    mapping(uint256 => bool) public nullified;
 
     error UnsupportedEntryPoint();
     error UnsupportedCall();
@@ -58,8 +58,8 @@ contract Shadowlings is IAccount, Verifier {
         onlyWithoutPrefund(missingAccountFunds)
         returns (uint256 validationData)
     {
-        (bytes32 commit) = abi.decode(userOp.callData[4:], (bytes32));
-        (bytes32 nullifier, Proof memory proof) = abi.decode(userOp.signature, (bytes32, Proof));
+        (uint256 commit) = abi.decode(userOp.callData[4:], (uint256));
+        (uint256 nullifier, Proof memory proof) = abi.decode(userOp.signature, (uint256, Proof));
 
         if (verifyProof(commit, nullifier, userOpHash, proof)) {
             validationData = SIG_VALIDATION_SUCCESS;
@@ -68,7 +68,7 @@ contract Shadowlings is IAccount, Verifier {
         }
     }
 
-    function execute(bytes32 commit, address token, address to, uint256 amount)
+    function execute(uint256 commit, address token, address to, uint256 amount)
         public
         onlyEntryPoint
         returns (bool success)
@@ -100,8 +100,8 @@ contract Shadowlings is IAccount, Verifier {
     }
 
     function executeWithProof(
-        bytes32 commit,
-        bytes32 nullifier,
+        uint256 commit,
+        uint256 nullifier,
         address token,
         address to,
         uint256 amount,
@@ -137,7 +137,7 @@ contract Shadowlings is IAccount, Verifier {
         );
     }
 
-    function getShadowling(bytes32 commit) public view returns (address authority) {
+    function getShadowling(uint256 commit) public view returns (address authority) {
         bytes memory signature = SIGNATURE;
 
         uint8 v;
@@ -155,31 +155,21 @@ contract Shadowlings is IAccount, Verifier {
         authority = ecrecover(authMessage, v, r, s);
     }
 
-    function verifyProof(bytes32 commit, bytes32 nullifier, bytes32 txHash, Proof memory proof)
+    function verifyProof(uint256 commit, uint256 nullifier, bytes32 txHash, Proof memory proof)
         public
         view
         returns (bool success)
     {
-        uint256[] memory input = new uint256[](6);
-        _unpack(input, 0, commit);
-        _unpack(input, 1, nullifier);
-        _unpack(input, 2, transferHash);
+        uint256[] memory input = new uint256[](3);
+        input[0] = commit;
+        input[1] = nullifier;
+        input[2] = _fieldify(txHash);
 
         //success = verify(input, proof) == 0;
         success = verify(input, proof) != 0; // just for testing...
     }
 
-    function _unpack(uint256[] memory input, uint256 ordinal, bytes32 value) internal pure {
-        assembly ("memory-safe") {
-            let ptr = add(input, add(mul(ordinal, 0x40), 0x20))
-            mstore(ptr, shr(128, value))
-            mstore(add(ptr, 0x32), and(value, 0xffffffffffffffffffffffffffffffff))
-        }
-    }
-
     function _fieldify(bytes32 value) internal pure returns (uint256 field) {
-        assembly ("memory-safe") {
-            field := and(value, 0x1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff)
-        }
+        field = uint256(uint248(uint256(value)));
     }
 }
