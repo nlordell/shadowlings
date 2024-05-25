@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.0;
 
-import {Test, console} from "forge-std/Test.sol";
-
 import {SIG_VALIDATION_SUCCESS, SIG_VALIDATION_FAILED} from "account-abstraction/core/Helpers.sol";
 import {IAccount, PackedUserOperation} from "account-abstraction/interfaces/IAccount.sol";
 
@@ -68,8 +66,8 @@ contract Shadowlings is IAccount, Verifier {
             success = verifyProof(commit, nullifier, userOpHash, proof);
         } else if (selector == this.register.selector) {
             (uint256 commit, uint256 saltHash) = abi.decode(userOp.callData[4:], (uint256, uint256));
-            (RegisterVerifier.Proof memory proof) = abi.decode(userOp.signature, (RegisterVerifier.Proof));
-            success = verifyRegisterProof(commit, saltHash, proof);
+            (uint256 nullifier, RegisterVerifier.Proof memory proof) = abi.decode(userOp.signature, (uint256, RegisterVerifier.Proof));
+            success = verifyRegisterProof(commit, nullifier, userOpHash, saltHash, proof);
         } else {
             revert UnsupportedCall();
         }
@@ -186,12 +184,12 @@ contract Shadowlings is IAccount, Verifier {
         success = RECOVERY.verifyTx(proof, input);
     }
 
-    function verifyRegisterProof(uint256 commit, uint256 saltHash, RegisterVerifier.Proof memory proof)
+    function verifyRegisterProof(uint256 commit, uint256 nullifier, bytes32 executionHash, uint256 saltHash, RegisterVerifier.Proof memory proof)
         public
         view
         returns (bool success)
     {
-        uint256[2] memory input = [commit, saltHash];
+        uint256[4] memory input = [commit, nullifier, _fieldify(executionHash), saltHash];
         success = REGISTER.verifyTx(proof, input);
     }
 

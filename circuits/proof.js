@@ -83,6 +83,8 @@ async function main() {
   console.log("### REGISTER ###");
   proove(zokrates, circuits.register, [
     commitHash,
+    nullifierHash,
+    executionHash,
     saltHash,
     ownerHash,
     salt,

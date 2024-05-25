@@ -9,6 +9,8 @@ def mimc(field a, field b) -> field {
 
 def main(
     public field expected_commit_hash,
+    public field expected_nullifier_hash,
+    public field execution_hash,
     public field expected_salt_hash,
     private field owner_hash,
     private field salt
@@ -18,6 +20,9 @@ def main(
 
     field commit_hash = mimc(owner_hash, salt_hash);
     assert(commit_hash == expected_commit_hash);
+
+    field nullifier_hash = mimc(execution_hash, salt_hash);
+    assert(nullifier_hash == expected_nullifier_hash);
 
     return;
 }

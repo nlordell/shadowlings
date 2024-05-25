@@ -72,10 +72,10 @@ contract ShadowlingsTest is Test {
     }
 
     function test_RegisterSaltNonce() public {
-        (uint256 commit, uint256 saltHash, RegisterVerifier.Proof memory proof) = _sampleRegisterProof();
+        (uint256 commit, uint256 nullifier, bytes32 executionHash, uint256 saltHash, RegisterVerifier.Proof memory proof) = _sampleRegisterProof();
 
         bytes memory callData = abi.encodeCall(shadowlings.register, (commit, saltHash));
-        bytes memory signature = abi.encode(proof);
+        bytes memory signature = abi.encode(nullifier, proof);
 
         PackedUserOperation memory userOp = PackedUserOperation({
             sender: address(shadowlings),
@@ -88,7 +88,7 @@ contract ShadowlingsTest is Test {
             paymasterAndData: "",
             signature: signature
         });
-        bytes32 userOpHash = bytes32(0);
+        bytes32 userOpHash = executionHash;
 
         vm.startPrank(entryPoint);
         require(shadowlings.validateUserOp(userOp, userOpHash, 0) == 0);
@@ -112,9 +112,9 @@ contract ShadowlingsTest is Test {
     }
 
     function test_VerifyRegisterProof() public view {
-        (uint256 commit, uint256 saltHash, RegisterVerifier.Proof memory proof) = _sampleRegisterProof();
+        (uint256 commit, uint256 nullifier, bytes32 executionHash, uint256 saltHash, RegisterVerifier.Proof memory proof) = _sampleRegisterProof();
 
-        bool success = shadowlings.verifyRegisterProof(commit, saltHash, proof);
+        bool success = shadowlings.verifyRegisterProof(commit, nullifier, executionHash, saltHash, proof);
 
         assertTrue(success);
     }
@@ -201,28 +201,30 @@ contract ShadowlingsTest is Test {
     function _sampleRegisterProof()
         internal
         pure
-        returns (uint256 commit, uint256 saltHash, RegisterVerifier.Proof memory proof)
+        returns (uint256 commit, uint256 nullifier, bytes32 executionHash, uint256 saltHash, RegisterVerifier.Proof memory proof)
     {
         commit = 0x153c333c4856f04f11c983484a8fbcd2705b4460498f55b4771cd09af3c306ab;
+        nullifier = 0x05476bcdcaba1d11916a4f3618d499f9b6c53506cb825926f25ea37e0627cc0d;
+        executionHash = 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee;
         saltHash = 0x0167d79660812409fa2f73c39d3b34cd1dd77b81f2e5b065c2411a7535f2f740;
 
         proof.a = RegisterPairing.G1Point(
-            0x02d2c2a7a6dcb60ebd1891e220ff77fceabc7e8089ce97654520d3b3a1c87b50,
-            0x0eb0c050d3050f129acfa6ff3102fb3c93f98c1b4e7212ace0e20508ce3de9ec
+            0x1320e03c3783d157a30bbec4f9db2a4761bc4dc3b88ba781e8c679f2b24d20fc,
+            0x3034ce8546ce619ff015130eb67a08a59a81dc40431c6964fd620b9dbba96428
         );
         proof.b = RegisterPairing.G2Point(
             [
-                0x2f26419c266e40b538f46f99f2d1941b5c1ed0224c224cb9e7f80875c7b5b8c0,
-                0x22981cf08f4448d6c144761f29d9cc52a475c2fa52751ee113aae837433c5a22
+                0x11f26057be5b4f6377b2a87b25841139c2c9dc038c06cad65050d3368de375cf,
+                0x2aeb06192d5372cee77b0d85a78c92d8c1b4cb043c9d89f284b2902a56a7d2ee
             ],
             [
-                0x28fb254cc8479330d668aa4c9ab1132f41149240a603651f392d1099d7411553,
-                0x122f1e0781b8738d1abde3f4da5fff1af4059d430e125118834570261b51f3ee
+                0x25e3b6d4e55be31dba513f26462078428c67c73041e3cb696c17b5b407e7fe2d,
+                0x138357274e7c0caf8d9314ec6d0b963c80be63a10784efae8722565c9f395fbf
             ]
         );
         proof.c = RegisterPairing.G1Point(
-            0x067725d6b6de9dddd40d4924f9cd87a44b25db246fa12b77499fb0ec6d22c035,
-            0x0e06ddd2bd93374bbe650301a465e433b093ca0c02d78d9da95eb130dbffddb3
+            0x0f5fc53e0fe1e111549d7d333772909805fdadae5b109a6e96e50d1dd6655385,
+            0x1c36a3924a9aa3a809ec8f0c484cb6d608d7513759855616a3a43c76ccbf475c
         );
     }
 }
