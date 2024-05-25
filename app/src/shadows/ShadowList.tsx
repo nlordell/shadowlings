@@ -1,16 +1,8 @@
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
-import CardContent from '@mui/material/CardContent';
-import TextField from '@mui/material/TextField';
-import { Button, CardActionArea, Paper, Typography } from '@mui/material';
-import { encodeBase32 } from 'geohashing';
-import React, { useCallback, useEffect, useState } from 'react';
+import { Button, Paper, Typography } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
 import { SignatureLike, ethers } from 'ethers';
-import shadows from '@mui/material/styles/shadows';
+import BalanceView from '../web3/BalanceView';
 
 const FIXED_SIGNATURE: SignatureLike = {
     yParity: 1,
@@ -38,16 +30,18 @@ const loadPersistedShadows = (owner: string): Array<Shadow> => {
     return JSON.parse(localStorage.getItem(`${owner}_shadows`) || "[]")
 }
 
+export const hash = (...parts: string[]): string => {
+    return ethers.solidityPackedSha256(
+        ["bytes32[]"],
+        [parts]
+    )
+}
+
 const calculateCommit = (owner: string, entropy: string, salt: string): string => {
-    const entropyHash = ethers.id(entropy)
-    const ownerHash = ethers.solidityPackedKeccak256(
-        ["address", "bytes32"],
-        [owner, entropyHash]
-    )
-    return ethers.solidityPackedKeccak256(
-        ["bytes32", "bytes32"],
-        [ownerHash, salt]
-    )
+    const entropyHash = hash(entropy)
+    const ownerHash = hash(owner, entropyHash)
+    const saltHash = hash(salt)
+    return hash(ownerHash, saltHash)
 }
 
 export const recoverShadowlingAddress = (commit: string, invoker: string = SHADOWLING_INVOKER, chainid: number = CHAIN_ID): string => {
@@ -85,6 +79,7 @@ export default function ShadowList({ owner, entropy }: Props): JSX.Element {
         {shadows.map((shadow) => (<Card style={{ margin: "8px" }}>
             <Typography>Address: {shadow.address}</Typography>
             <Typography>Salt: {shadow.salt}</Typography>
+            <BalanceView address={shadow.address} />
         </Card>))}
     </Paper>)
 }
