@@ -1,4 +1,5 @@
 app/src/config/*/artifacts.json
 contracts/broadcast/**/dry-run/
+contracts/broadcast/*/31337/
 docker/data/
 node_modules/

@@ -219,7 +219,7 @@ contract Shadowlings is IAccount, Verifier {
             assembly ("memory-safe") {
                 let ptr := mload(0x40)
                 returndatacopy(ptr, 0, returndatasize())
-                return(ptr, returndatasize())
+                revert(ptr, returndatasize())
             }
         }
     }

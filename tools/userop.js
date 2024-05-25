@@ -39,7 +39,7 @@ async function main() {
   );
 
   const shadowlings = new ethers.Contract(
-    options.shadowlings ?? "0x3f921430daab41807d7013b7f4d4c3a37fe58142",
+    options.shadowlings ?? "0x011a5d338bDAA029776DC1dd56D93EC31b46F0B8",
     [
       `function ENTRY_POINT() view returns (address)`,
       `function getShadowling(uint256 commit) view returns (address)`,
@@ -139,6 +139,19 @@ async function main() {
     { ...userOp, signature },
     await entryPoint.getAddress(),
   );
+
+  let userOpReceipt;
+  while (!userOpReceipt) {
+    userOpReceipt = await bundler.getUserOperationByHash(userOpHash);
+  }
+  const transactionReceipt = await provider.getTransactionReceipt(
+    userOpReceipt.transactionHash,
+  );
+  console.log({
+    userOpReceipt,
+    transactionReceipt,
+    logs: transactionReceipt.logs,
+  });
 }
 
 async function circuit(name) {
@@ -188,6 +201,10 @@ class Bundler {
     this.#id = 0;
   }
 
+  async supportedEntryPoints() {
+    return await this.send("eth_supportedEntryPoints", []);
+  }
+
   async sendUserOperation(userOp, entryPoint) {
     return await this.send("eth_sendUserOperation", [
       this.jsonUserOp(userOp),
@@ -195,8 +212,8 @@ class Bundler {
     ]);
   }
 
-  async supportedEntryPoints() {
-    return await this.send("eth_supportedEntryPoints", []);
+  async getUserOperationByHash(userOpHash) {
+    return await this.send("eth_getUserOperationByHash", [userOpHash]);
   }
 
   async send(method, params) {
