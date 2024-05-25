@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import logo from './logo.svg';
 import { ethers } from 'ethers';
 import './App.css';
-import artifactJson from './config/artifacts.json'
-import keypairJson from './config/keypair.json'
+import artifactJson from './config/main/artifacts.json'
+import keypairJson from './config/main/keypair.json'
 import { Abi, CompilationArtifacts, initialize } from "zokrates-js";
 import LocationDialog from './setup/LocationDialog';
 import { Typography } from '@mui/material';
