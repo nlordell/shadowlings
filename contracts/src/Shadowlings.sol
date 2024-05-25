@@ -7,7 +7,8 @@ import {Test, console} from "forge-std/Test.sol";
 import {SIG_VALIDATION_SUCCESS, SIG_VALIDATION_FAILED} from "account-abstraction/core/Helpers.sol";
 import {IAccount, PackedUserOperation} from "account-abstraction/interfaces/IAccount.sol";
 
-import {Verifier} from "./Verifier.sol";
+import {Verifier} from "./verifiers/main/Verifier.sol";
+import {Verifier as RecoveryVerifier} from "./verifiers/recovery/Verifier.sol";
 
 contract Shadowlings is IAccount, Verifier {
     bytes32 public constant DOMAIN_TYPEHASH = keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
@@ -17,6 +18,7 @@ contract Shadowlings is IAccount, Verifier {
         hex"0174a52317b658076e35432533edc88c2f86823e2fcfd2b56f8fad46fb32d6a51718811e130eeacc4232614ef16382b62d0d6e04eadf9fb575647e9cca12f0147f";
 
     address public immutable ENTRY_POINT;
+    RecoveryVerifier public immutable RECOVERY;
 
     mapping(uint256 => bool) public nullified;
 
@@ -28,6 +30,7 @@ contract Shadowlings is IAccount, Verifier {
 
     constructor(address entryPoint) {
         ENTRY_POINT = entryPoint;
+        RECOVERY = new RecoveryVerifier();
     }
 
     modifier onlyEntryPoint() {
@@ -73,30 +76,7 @@ contract Shadowlings is IAccount, Verifier {
         onlyEntryPoint
         returns (bool success)
     {
-        address authority = getShadowling(commit);
-        bytes memory authData = abi.encodePacked(SIGNATURE, commit);
-        assembly ("memory-safe") {
-            pop(auth(authority, add(authData, 0x20), mload(authData)))
-        }
-
-        if (token == address(0)) {
-            assembly ("memory-safe") {
-                success := authcall(gas(), to, amount, 0, 0, 0, 0)
-            }
-        } else {
-            bytes memory callData = abi.encodeWithSignature("transfer(address,uint256)", to, amount);
-            assembly ("memory-safe") {
-                success := authcall(gas(), token, 0, add(callData, 0x20), mload(callData), 0, 0)
-            }
-        }
-
-        if (!success) {
-            assembly ("memory-safe") {
-                let ptr := mload(0x40)
-                returndatacopy(ptr, 0, returndatasize())
-                return(ptr, returndatasize())
-            }
-        }
+        success = _execute(commit, token, to, amount);
     }
 
     function executeWithProof(
@@ -118,7 +98,22 @@ contract Shadowlings is IAccount, Verifier {
             revert InvalidProof();
         }
 
-        success = execute(commit, token, to, amount);
+        success = _execute(commit, token, to, amount);
+    }
+
+    function executeWithRecovery(
+        uint256 commit,
+        uint256 saltHash,
+        address token,
+        address to,
+        uint256 amount,
+        RecoveryVerifier.Proof memory proof
+    ) external returns (bool success) {
+        if (!verifyRecoveryProof(commit, msg.sender, saltHash, proof)) {
+            revert InvalidProof();
+        }
+
+        success = _execute(commit, token, to, amount);
     }
 
     function domainSeparator() public view returns (bytes32 hash) {
@@ -166,6 +161,45 @@ contract Shadowlings is IAccount, Verifier {
         input[2] = _fieldify(executionHash);
 
         success = verify(input, proof) == 0;
+    }
+
+    function verifyRecoveryProof(uint256 commit, address owner, uint256 saltHash, RecoveryVerifier.Proof memory proof)
+        public
+        view
+        returns (bool success)
+    {
+        uint256[3] memory input = [commit, uint256(uint160(owner)), saltHash];
+        success = RECOVERY.verifyTx(proof, input);
+    }
+
+    function _execute(uint256 commit, address token, address to, uint256 amount)
+        internal
+        returns (bool success)
+    {
+        address authority = getShadowling(commit);
+        bytes memory authData = abi.encodePacked(SIGNATURE, commit);
+        assembly ("memory-safe") {
+            pop(auth(authority, add(authData, 0x20), mload(authData)))
+        }
+
+        if (token == address(0)) {
+            assembly ("memory-safe") {
+                success := authcall(gas(), to, amount, 0, 0, 0, 0)
+            }
+        } else {
+            bytes memory callData = abi.encodeWithSignature("transfer(address,uint256)", to, amount);
+            assembly ("memory-safe") {
+                success := authcall(gas(), token, 0, add(callData, 0x20), mload(callData), 0, 0)
+            }
+        }
+
+        if (!success) {
+            assembly ("memory-safe") {
+                let ptr := mload(0x40)
+                returndatacopy(ptr, 0, returndatasize())
+                return(ptr, returndatasize())
+            }
+        }
     }
 
     function _fieldify(bytes32 value) internal pure returns (uint256 field) {

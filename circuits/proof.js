@@ -10,48 +10,74 @@ const pepper = "0x2a";
 const executionHash =
   "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 
-async function main() {
-  const zokrates = await initialize();
-  const mimc = await buildMimcHasher();
-
+async function load(name) {
   const artifacts = JSON.parse(
     await fs.readFile(
-      "./app/src/config/artifacts.json",
+      `./app/src/config/${name}/artifacts.json`,
       "utf-8",
     ),
   );
-  const { vk, pk } = JSON.parse(
+  const keypair = JSON.parse(
     await fs.readFile(
-      "./app/src/config/keypair.json",
+      `./app/src/config/${name}/keypair.json`,
       "utf-8",
     ),
   );
+  return {
+    artifacts: { ...artifacts, program: fromHex(artifacts.program) },
+    keypair: { ...keypair, pk: fromHex(keypair.pk) },
+  };
+}
 
-  const ownerHash = mimc(owner, entropy);
-  const saltHash = mimc(salt, pepper);
-  const commitHash = mimc(ownerHash, saltHash);
-  const nullifierHash = mimc(executionHash, saltHash);
+function proove(zokrates, { artifacts, keypair }, inputs) {
   const { witness } = zokrates.computeWitness(
-    {
-      ...artifacts,
-      program: fromHex(artifacts.program),
-    },
-    [commitHash, nullifierHash, executionHash, ownerHash, salt]
-      .map(toFieldElement),
+    artifacts,
+    inputs.map(toFieldElement),
   );
-
   const proof = zokrates.generateProof(
-    fromHex(artifacts.program),
+    artifacts.program,
     witness,
-    fromHex(pk),
+    keypair.pk,
   );
 
-  if (!zokrates.verify(vk, proof)) {
+  if (!zokrates.verify(keypair.vk, proof)) {
     throw new Error("error locally verifying proof");
   }
 
   console.log(proof.proof);
   console.log({ inputs: proof.inputs });
+}
+
+async function main() {
+  const zokrates = await initialize();
+  const mimc = await buildMimcHasher();
+
+  const circuits = {
+    main: await load("main"),
+    recovery: await load("recovery"),
+  };
+
+  const ownerHash = mimc(owner, entropy);
+  const saltHash = mimc(salt, pepper);
+  const commitHash = mimc(ownerHash, saltHash);
+  const nullifierHash = mimc(executionHash, saltHash);
+
+  console.log("### MAIN ###");
+  proove(zokrates, circuits.main, [
+    commitHash,
+    nullifierHash,
+    executionHash,
+    ownerHash,
+    salt,
+  ]);
+
+  console.log("### RECOVERY ###");
+  proove(zokrates, circuits.recovery, [
+    commitHash,
+    owner,
+    saltHash,
+    entropy,
+  ]);
 }
 
 main().catch((err) => console.error(err));

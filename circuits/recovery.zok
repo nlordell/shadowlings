@@ -1,0 +1,19 @@
+import "hashes/mimcSponge/mimcSponge";
+
+def mimc(field a, field b) -> field {
+    field[1] out = mimcSponge([a, b], 0);
+    return out[0];
+}
+
+def main(
+    public field expected_commit_hash,
+    public field owner,
+    public field salt_hash,
+    private field entropy
+) {
+    field owner_hash = mimc(owner, entropy);
+    field commit_hash = mimc(owner_hash, salt_hash);
+    assert(commit_hash == expected_commit_hash);
+
+    return;
+}
