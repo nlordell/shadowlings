@@ -1,2 +1,3 @@
 app/src/config/*/artifacts.json
+docker/data/
 node_modules/

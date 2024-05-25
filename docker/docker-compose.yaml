@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  bundler:
+    build:
+      context: .
+      dockerfile: bundler/Dockerfile
+    restart: always
+    command:
+      - --auto
+      - --unsafe
+      - --network=http://devnet.otim.xyz/
+      - --mnemonic=/data/bundler/mnemonic.txt
+    environment:
+      DEBUG: 'aa.exec,aa.exec.cron,aa.events,aa.mempool'
+    ports:
+      - 3000:3000
+    volumes:
+      - ./data:/data
