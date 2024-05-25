@@ -72,7 +72,13 @@ contract ShadowlingsTest is Test {
     }
 
     function test_RegisterSaltNonce() public {
-        (uint256 commit, uint256 nullifier, bytes32 executionHash, uint256 saltHash, RegisterVerifier.Proof memory proof) = _sampleRegisterProof();
+        (
+            uint256 commit,
+            uint256 nullifier,
+            bytes32 executionHash,
+            uint256 saltHash,
+            RegisterVerifier.Proof memory proof
+        ) = _sampleRegisterProof();
 
         bytes memory callData = abi.encodeCall(shadowlings.register, (commit, saltHash));
         bytes memory signature = abi.encode(nullifier, proof);
@@ -112,7 +118,13 @@ contract ShadowlingsTest is Test {
     }
 
     function test_VerifyRegisterProof() public view {
-        (uint256 commit, uint256 nullifier, bytes32 executionHash, uint256 saltHash, RegisterVerifier.Proof memory proof) = _sampleRegisterProof();
+        (
+            uint256 commit,
+            uint256 nullifier,
+            bytes32 executionHash,
+            uint256 saltHash,
+            RegisterVerifier.Proof memory proof
+        ) = _sampleRegisterProof();
 
         bool success = shadowlings.verifyRegisterProof(commit, nullifier, executionHash, saltHash, proof);
 
@@ -201,7 +213,13 @@ contract ShadowlingsTest is Test {
     function _sampleRegisterProof()
         internal
         pure
-        returns (uint256 commit, uint256 nullifier, bytes32 executionHash, uint256 saltHash, RegisterVerifier.Proof memory proof)
+        returns (
+            uint256 commit,
+            uint256 nullifier,
+            bytes32 executionHash,
+            uint256 saltHash,
+            RegisterVerifier.Proof memory proof
+        )
     {
         commit = 0x153c333c4856f04f11c983484a8fbcd2705b4460498f55b4771cd09af3c306ab;
         nullifier = 0x05476bcdcaba1d11916a4f3618d499f9b6c53506cb825926f25ea37e0627cc0d;

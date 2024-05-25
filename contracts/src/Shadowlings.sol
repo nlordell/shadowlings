@@ -66,7 +66,8 @@ contract Shadowlings is IAccount, Verifier {
             success = verifyProof(commit, nullifier, userOpHash, proof);
         } else if (selector == this.register.selector) {
             (uint256 commit, uint256 saltHash) = abi.decode(userOp.callData[4:], (uint256, uint256));
-            (uint256 nullifier, RegisterVerifier.Proof memory proof) = abi.decode(userOp.signature, (uint256, RegisterVerifier.Proof));
+            (uint256 nullifier, RegisterVerifier.Proof memory proof) =
+                abi.decode(userOp.signature, (uint256, RegisterVerifier.Proof));
             success = verifyRegisterProof(commit, nullifier, userOpHash, saltHash, proof);
         } else {
             revert UnsupportedCall();
@@ -89,6 +90,7 @@ contract Shadowlings is IAccount, Verifier {
 
     function register(uint256 commit, uint256 saltHash) external onlyEntryPoint returns (bool success) {
         emit RecoverySaltHash(getShadowling(commit), saltHash);
+        success = true;
     }
 
     function executeWithProof(
@@ -184,11 +186,13 @@ contract Shadowlings is IAccount, Verifier {
         success = RECOVERY.verifyTx(proof, input);
     }
 
-    function verifyRegisterProof(uint256 commit, uint256 nullifier, bytes32 executionHash, uint256 saltHash, RegisterVerifier.Proof memory proof)
-        public
-        view
-        returns (bool success)
-    {
+    function verifyRegisterProof(
+        uint256 commit,
+        uint256 nullifier,
+        bytes32 executionHash,
+        uint256 saltHash,
+        RegisterVerifier.Proof memory proof
+    ) public view returns (bool success) {
         uint256[4] memory input = [commit, nullifier, _fieldify(executionHash), saltHash];
         success = REGISTER.verifyTx(proof, input);
     }

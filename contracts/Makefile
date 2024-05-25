@@ -1,11 +1,13 @@
-.DEFAULT_GOAL := all
-
 .PHONY: all
 all: test
 
 .PHONY: test
 test:
 	$(MAKE) foundry CMD="forge test -vvv"
+
+.PHONY: deploy
+deploy:
+	$(MAKE) foundry CMD="forge script script/Shadowlings.s.sol:ShadowlingsDeploy --chain 1337 --rpc-url http://devnet.otim.xyz --private-key $(PK) --broadcast -vvv"
 
 .PHONY: foundry
 foundry:
@@ -23,7 +25,7 @@ fmt:
 		-w /contracts \
 		--entrypoint /bin/bash \
 		ghcr.io/paradigmxyz/foundry-alphanet:latest \
-		-c 'forge fmt src/*.sol test/'
+		-c 'forge fmt script/ src/*.sol test/'
 
 .PHONY: install
 install:

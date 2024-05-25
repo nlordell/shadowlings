@@ -1,3 +1,4 @@
 app/src/config/*/artifacts.json
+contracts/broadcast/**/dry-run/
 docker/data/
 node_modules/
