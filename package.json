@@ -7,6 +7,8 @@
     "circuits:setup": "node ./circuits/setup.js",
     "circuits:proof": "node ./circuits/proof.js",
     "contracts:test": "make -C contracts test",
-    "tools:userop": "node ./tools/userop.js"
+    "tools:userop": "node ./tools/userop.js",
+    "tools:fund": "node ./tools/fund.js",
+    "tools:recovery": "node ./tools/recovery.js"
   }
 }
