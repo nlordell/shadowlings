@@ -6,3 +6,7 @@ Shadow deposit accounts using Nick's method and ZKP.
 
 - Run Safe transaction service (Richard)
 - Host Safe UI (Richard)
+
+# Setup
+
+- `git submodule update --init --recursive`

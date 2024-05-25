@@ -2,46 +2,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import logo from './logo.svg';
 import { ethers } from 'ethers';
 import './App.css';
-import artifactJson from './config/main/artifacts.json'
-import keypairJson from './config/main/keypair.json'
-import { Abi, CompilationArtifacts, initialize } from "zokrates-js";
 import LocationDialog from './setup/LocationDialog';
 import { Typography } from '@mui/material';
 import OwnerDialog from './setup/OwnerDialog';
 import ShadowList from './shadows/ShadowList';
-
-interface PersistedArtifact {
-  program: string,
-  abi: Abi
-}
-const loadProvingKey = (): Uint8Array => {
-  return ethers.getBytes(keypairJson.pk)
-}
-
-const loadPersistedArtifacts = (): PersistedArtifact => {
-  return artifactJson as any
-}
-
-const loadArtifact = (): CompilationArtifacts => {
-  const persisted = loadPersistedArtifacts()
-  return {
-    program: ethers.getBytes(persisted.program),
-    abi: persisted.abi
-  }
-}
-
-const createProof = async (account: string) => {
-  const zok = await initialize()
-  const provingKey = loadProvingKey()
-  const artifact = loadArtifact()
-  const {witness} = zok.computeWitness(artifact, ["2", "4"])
-  const proof = zok.generateProof(
-    artifact.program,
-    witness,
-    provingKey
-  );
-  console.log(proof)
-}
 
 function App() {
   const [showOwnerDialog, setShowOwnersDialog] = useState(false)

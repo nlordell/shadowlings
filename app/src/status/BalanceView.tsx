@@ -1,20 +1,12 @@
-import { Typography } from "@mui/material"
+import { Button, Typography } from "@mui/material"
 import { ethers } from "ethers"
 import { useCallback, useEffect, useState } from "react"
-
-const RPC_URL = "http://devnet.otim.xyz"
-const CORS_URL = 'https://corsproxy.io/?' + encodeURIComponent(RPC_URL);
-
-var provider: ethers.Provider | undefined
-
-export const globalProvier = (): ethers.Provider => {
-    if (!provider)    
-        provider = new ethers.JsonRpcProvider(CORS_URL)
-    return provider
-}
+import { globalProvier } from "../utils/web3"
+import WithdrawDialog from "../transact/WithdrawDialog"
 
 export interface Props {
     address: string,
+    salt: string,
     token?: string
 }
 
@@ -25,8 +17,9 @@ const loadBalances = async(address: string, token: string | undefined): Promise<
         throw Error("Not implemented")
 }
 
-export default function BalanceView({ address, token }: Props): JSX.Element {
+export default function BalanceView({ address, salt, token }: Props): JSX.Element {
 
+    const [showWithdrawDialog, setShowWithdrawDialog] = useState(false)
     const [balance, setBalance] = useState<string|undefined>()
 
     const refreshBalances = useCallback(async (address: string, token: string | undefined) => {
@@ -46,5 +39,15 @@ export default function BalanceView({ address, token }: Props): JSX.Element {
     }, [address, token])
     return (<Typography>
         {token || "Ether"}: {balance || "Loading..."}
+        <Button size="small" onClick={() => setShowWithdrawDialog(true)}>Withdraw</Button>
+
+        <WithdrawDialog 
+            open={showWithdrawDialog} 
+            shadowAddress={address}
+            salt={salt}
+            token={token}
+            maxAmount={balance}
+            handleSubmit={() => { setShowWithdrawDialog(false) }}
+        />
     </ Typography>)
 }

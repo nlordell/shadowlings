@@ -1,8 +1,9 @@
 import Card from '@mui/material/Card';
-import { Button, Paper, Typography } from '@mui/material';
+import { Button, CardActions, Paper, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { SignatureLike, ethers } from 'ethers';
-import BalanceView from '../web3/BalanceView';
+import BalanceView from '../status/BalanceView';
+import { calculateCommit } from '../utils/proof';
 
 const FIXED_SIGNATURE: SignatureLike = {
     yParity: 1,
@@ -30,20 +31,6 @@ const loadPersistedShadows = (owner: string): Array<Shadow> => {
     return JSON.parse(localStorage.getItem(`${owner}_shadows`) || "[]")
 }
 
-export const hash = (...parts: string[]): string => {
-    return ethers.solidityPackedSha256(
-        ["bytes32[]"],
-        [parts]
-    )
-}
-
-const calculateCommit = (owner: string, entropy: string, salt: string): string => {
-    const entropyHash = hash(entropy)
-    const ownerHash = hash(owner, entropyHash)
-    const saltHash = hash(salt)
-    return hash(ownerHash, saltHash)
-}
-
 export const recoverShadowlingAddress = (commit: string, invoker: string = SHADOWLING_INVOKER, chainid: number = CHAIN_ID): string => {
     const authHash = ethers.solidityPackedKeccak256(
         ["uint8", "uint256", "uint256", "uint256", "bytes32"],
@@ -56,8 +43,8 @@ export const recoverShadowlingAddress = (commit: string, invoker: string = SHADO
 
 // keccak256(abi.encodePacked(uint8(0x04), block.chainid, uint256(0), uint256(uint160(address(this))), commit));
 const createShadow = async (owner: string, entropy: string): Promise<Shadow> => {
-    const salt = ethers.hexlify(ethers.randomBytes(32))
-    const commit = calculateCommit(owner, entropy, salt)
+    const salt = ethers.hexlify(ethers.randomBytes(31))
+    const {commit} = await calculateCommit(owner, entropy, salt)
     const address = recoverShadowlingAddress(commit)
     return {
         address,
@@ -74,12 +61,22 @@ export default function ShadowList({ owner, entropy }: Props): JSX.Element {
         persistShadows(owner, shadows)
         setShadows(shadows)
     }, [owner, entropy])
-    return (<Paper style={{padding: "8px"}} elevation={0}>
+
+    const removeShadow = useCallback(async(shadowId: string) => {
+        const shadows = loadPersistedShadows(owner)
+            .filter((shadow) => shadow.address != shadowId)
+        persistShadows(owner, shadows)
+        setShadows(shadows)
+    }, [owner, entropy])
+    return (<Paper style={{padding: "8px", maxWidth: "800px", margin: "0px auto"}} elevation={0}>
         <Typography>Shadows: <Button onClick={addShadow}>Add</Button></Typography>
         {shadows.map((shadow) => (<Card style={{ margin: "8px" }}>
             <Typography>Address: {shadow.address}</Typography>
             <Typography>Salt: {shadow.salt}</Typography>
-            <BalanceView address={shadow.address} />
+            <BalanceView address={shadow.address} salt={shadow.salt} />
+            <CardActions>
+                <Button size="small" onClick={() => removeShadow(shadow.address)}>Remove</Button>
+            </CardActions>
         </Card>))}
     </Paper>)
 }

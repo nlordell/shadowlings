@@ -1,5 +1,6 @@
 import { ethers } from "ethers"
-import { hash, recoverShadowlingAddress } from "./ShadowList"
+import { recoverShadowlingAddress } from "./ShadowList"
+import { calculateCommit } from "../utils/proof"
 
 test("Recover expected address", () => {
     expect(
@@ -7,16 +8,10 @@ test("Recover expected address", () => {
     ).toBe("0xec31Bf31FaA8688FD52a85bbc2f7f4c69A876001")
 })
 
-test("Hash single", () => {
-    const entropy = ethers.id("commit")
-    expect(hash(entropy)).toBe(ethers.sha256(entropy))
-})
-
-test("Hash multi", () => {
-    const entropy = ethers.id("commit")
-    const exected = ethers.solidityPackedSha256(
-        ["bytes32", "bytes32"],
-        [ethers.ZeroHash, entropy]
-    )
-    expect(hash(ethers.ZeroHash, entropy)).toBe(exected)
+test("Calculate commit", async () => {
+    const owner = "0x1111111111111111111111111111111111111111";
+    const entropy = "0x5afe";
+    const salt = "0x01020304";
+    const commit = await calculateCommit(owner, entropy, salt)
+    expect(commit).toBe("0x153c333c4856f04f11c983484a8fbcd2705b4460498f55b4771cd09af3c306ab")
 })
