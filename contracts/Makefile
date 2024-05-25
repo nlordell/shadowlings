@@ -23,7 +23,7 @@ fmt:
 		-w /contracts \
 		--entrypoint /bin/bash \
 		ghcr.io/paradigmxyz/foundry-alphanet:latest \
-		-c 'forge fmt src/Shadowlings.sol test/'
+		-c 'forge fmt src/*.sol test/'
 
 .PHONY: install
 install:

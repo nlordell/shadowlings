@@ -28,6 +28,8 @@ contract Shadowlings is IAccount, Verifier {
     error Nullified();
     error InvalidProof();
 
+    event RecoverySaltHash(address indexed shadowling, uint256 saltHash);
+
     constructor(address entryPoint) {
         ENTRY_POINT = entryPoint;
         RECOVERY = new RecoveryVerifier();
@@ -56,6 +58,7 @@ contract Shadowlings is IAccount, Verifier {
 
     function validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
         external
+        view
         onlyEntryPoint
         onlySupportedCall(userOp)
         onlyWithoutPrefund(missingAccountFunds)
@@ -71,11 +74,19 @@ contract Shadowlings is IAccount, Verifier {
         }
     }
 
-    function execute(uint256 commit, address token, address to, uint256 amount)
+    function execute(uint256 commit, address token, address to, uint256 amount, uint256 recoverySaltHash)
         public
         onlyEntryPoint
         returns (bool success)
     {
+        // Optionally, record a `saltHash` for recovery flows. This is quite
+        // hacky at the moment, ideally we would have a separate `register`
+        // function for registering recovery with its own proof that of salt
+        // hash and commit. Will do if there is enough time in the end.
+        if (recoverySaltHash != 0) {
+            emit RecoverySaltHash(getShadowling(commit), recoverySaltHash);
+        }
+
         success = _execute(commit, token, to, amount);
     }
 
@@ -172,10 +183,7 @@ contract Shadowlings is IAccount, Verifier {
         success = RECOVERY.verifyTx(proof, input);
     }
 
-    function _execute(uint256 commit, address token, address to, uint256 amount)
-        internal
-        returns (bool success)
-    {
+    function _execute(uint256 commit, address token, address to, uint256 amount) internal returns (bool success) {
         address authority = getShadowling(commit);
         bytes memory authData = abi.encodePacked(SIGNATURE, commit);
         assembly ("memory-safe") {

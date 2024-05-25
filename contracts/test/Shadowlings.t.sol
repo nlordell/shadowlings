@@ -27,7 +27,7 @@ contract ShadowlingsTest is Test {
         assertEq(shadowling.balance, 1 ether);
 
         vm.prank(entryPoint);
-        shadowlings.execute(commit, token, to, amount);
+        shadowlings.execute(commit, token, to, amount, 0);
 
         assertEq(to.balance, 1 ether);
         assertEq(shadowling.balance, 0);
@@ -40,7 +40,7 @@ contract ShadowlingsTest is Test {
         address to = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
         uint256 amount = 1 ether;
 
-        bytes memory callData = abi.encodeCall(shadowlings.execute, (commit, token, to, amount));
+        bytes memory callData = abi.encodeCall(shadowlings.execute, (commit, token, to, amount, 0));
         bytes memory signature = abi.encode(nullifier, proof);
 
         PackedUserOperation memory userOp = PackedUserOperation({
@@ -64,13 +64,13 @@ contract ShadowlingsTest is Test {
 
         vm.startPrank(entryPoint);
         require(shadowlings.validateUserOp(userOp, userOpHash, 0) == 0);
-        shadowlings.execute(commit, token, to, amount);
+        shadowlings.execute(commit, token, to, amount, 0);
 
         assertEq(to.balance, 1 ether);
         assertEq(shadowling.balance, 0);
     }
 
-    function test_VerifyProof() public {
+    function test_VerifyProof() public view {
         (uint256 commit, uint256 nullifier, bytes32 executionHash, Verifier.Proof memory proof) = _sampleProof();
 
         bool success = shadowlings.verifyProof(commit, nullifier, executionHash, proof);
@@ -78,7 +78,7 @@ contract ShadowlingsTest is Test {
         assertTrue(success);
     }
 
-    function test_VerifyRecoveryProof() public {
+    function test_VerifyRecoveryProof() public view {
         (uint256 commit, address owner, uint256 saltHash, RecoveryVerifier.Proof memory proof) = _sampleRecoveryProof();
 
         bool success = shadowlings.verifyRecoveryProof(commit, owner, saltHash, proof);
