@@ -2,7 +2,6 @@
 
 ## ToDos
 
-- [ ] Add withdraw UI
 - [ ] Calculate transaction proof
 - [ ] Submit tx via 4337
 - [ ] Add recovery UI

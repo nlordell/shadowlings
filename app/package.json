@@ -24,7 +24,7 @@
     "zokrates-js": "^1.1.9"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "PORT=3006 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -42,6 +42,9 @@
     ]
   },
   "devDependencies": {
-    "@types/circomlibjs": "^0.1.6"
+    "@types/circomlibjs": "^0.1.6",
+    "assert": "^2.1.0",
+    "buffer": "^6.0.3",
+    "process": "^0.11.10"
   }
 }

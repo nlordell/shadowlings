@@ -4,16 +4,18 @@ import { useCallback, useEffect, useState } from 'react';
 import { SignatureLike, ethers } from 'ethers';
 import BalanceView from '../status/BalanceView';
 import { calculateCommit } from '../utils/proof';
+import { SHADOWLING_ADDRESS } from '../utils/invoker';
+import ShadowEntry from './ShadowEntry';
+import RecoveryDialog from '../transact/RecoveryDialog';
 
 const FIXED_SIGNATURE: SignatureLike = {
     yParity: 1,
     r: "0x74a52317b658076e35432533edc88c2f86823e2fcfd2b56f8fad46fb32d6a517",
     s: "0x18811e130eeacc4232614ef16382b62d0d6e04eadf9fb575647e9cca12f0147f"
 }
-const SHADOWLING_INVOKER = ethers.ZeroAddress
 const CHAIN_ID = 31337
 
-interface Shadow {
+export interface Shadow {
     address: string,
     salt: string
 }
@@ -31,10 +33,10 @@ const loadPersistedShadows = (owner: string): Array<Shadow> => {
     return JSON.parse(localStorage.getItem(`${owner}_shadows`) || "[]")
 }
 
-export const recoverShadowlingAddress = (commit: string, invoker: string = SHADOWLING_INVOKER, chainid: number = CHAIN_ID): string => {
+export const recoverShadowlingAddress = (commit: string, invoker: string = SHADOWLING_ADDRESS, chainid: number = CHAIN_ID): string => {
     const authHash = ethers.solidityPackedKeccak256(
         ["uint8", "uint256", "uint256", "uint256", "bytes32"],
-        ["0x04", chainid, 0, invoker, commit]
+        ["0x04", chainid, 0, invoker, ethers.zeroPadBytes(commit, 32)]
     )
     return ethers.recoverAddress(
         authHash, FIXED_SIGNATURE
@@ -53,6 +55,7 @@ const createShadow = async (owner: string, entropy: string): Promise<Shadow> => 
 }
 
 export default function ShadowList({ owner, entropy }: Props): JSX.Element {
+    const [showRecoveryDialog, setShowRecoveryDialog] = useState(false)
     const [shadows, setShadows] = useState<Array<Shadow>>(loadPersistedShadows(owner))
 
     const addShadow = useCallback(async() => {
@@ -69,14 +72,8 @@ export default function ShadowList({ owner, entropy }: Props): JSX.Element {
         setShadows(shadows)
     }, [owner, entropy])
     return (<Paper style={{padding: "8px", maxWidth: "800px", margin: "0px auto"}} elevation={0}>
-        <Typography>Shadows: <Button onClick={addShadow}>Add</Button></Typography>
-        {shadows.map((shadow) => (<Card style={{ margin: "8px" }}>
-            <Typography>Address: {shadow.address}</Typography>
-            <Typography>Salt: {shadow.salt}</Typography>
-            <BalanceView address={shadow.address} salt={shadow.salt} />
-            <CardActions>
-                <Button size="small" onClick={() => removeShadow(shadow.address)}>Remove</Button>
-            </CardActions>
-        </Card>))}
+        <RecoveryDialog open={showRecoveryDialog} handleClose={() => setShowRecoveryDialog(false)}/>
+        <Typography>Shadows: <Button onClick={addShadow}>Add</Button><Button onClick={() => setShowRecoveryDialog(true)}>Recover</Button></Typography>
+        {shadows.map((shadow) => (<ShadowEntry owner={owner} shadow={shadow} onRemove={removeShadow}/>))}
     </Paper>)
 }

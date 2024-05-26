@@ -10,7 +10,8 @@ import { Button, CardActionArea, DialogActions } from '@mui/material';
 import { encodeBase32 } from 'geohashing';
 import React, { useCallback, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { createWithdrawData } from '../utils/proof';
+import { buildSignature, createWithdrawData } from '../utils/proof';
+import { globalBundler } from '../utils/userops';
 
 interface OwnerResult {
     owner: string
@@ -18,14 +19,14 @@ interface OwnerResult {
 
 export interface Props {
     open: boolean,
-    handleSubmit: () => void,
+    handleClose: () => void,
     shadowAddress: string,
     salt: string,
     token: string | undefined,
     maxAmount: string | undefined
 }
 
-export default function WithdrawDialog({ open, handleSubmit, shadowAddress, salt, token }: Props): JSX.Element {
+export default function WithdrawDialog({ open, handleClose, shadowAddress, salt, token }: Props): JSX.Element {
     const [target, setTarget] = React.useState("")
     const [amount, setAmount] = React.useState("")
 
@@ -38,20 +39,26 @@ export default function WithdrawDialog({ open, handleSubmit, shadowAddress, salt
             const targetAddress = ethers.getAddress(target)
             const amountAtoms = ethers.parseEther(amount)
             const withdrawData = await createWithdrawData(
-                owner, entropy, salt, token || ethers.ZeroAddress, targetAddress, amountAtoms
+                shadowAddress, owner, entropy, salt, token || ethers.ZeroAddress, targetAddress, amountAtoms
             )
+
             console.log(withdrawData)
+            console.log(await globalBundler.sendUserOperation({
+                ...withdrawData.userOp,
+                signature: buildSignature(withdrawData.nullifier, withdrawData.proof)
+            }, withdrawData.entrypoint))
             //setTarget("")
             //setAmount("")
-            handleSubmit()
+            handleClose()
         } catch (e) {
             console.error(e)
         }
-    }, [shadowAddress, salt, token, handleSubmit, setTarget, setAmount])
+    }, [shadowAddress, salt, token, handleClose, setTarget, setAmount])
 
     return (
         <Dialog 
             open={open}
+            onClose={handleClose}
             aria-labelledby="alert-dialog-title"
             aria-describedby="alert-dialog-description"
         >

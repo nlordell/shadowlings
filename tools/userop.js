@@ -24,7 +24,8 @@ const options = program
 
 async function main() {
   const owner = ethers.getAddress(options.owner);
-  const entropy = BigInt(options.entropy ?? 0);
+  const entropy = BigInt(ethers.hexlify(ethers.toUtf8Bytes(options.entropy || "0")));
+  console.log({entropy})
   const salt = BigInt(options.salt);
   const pepper = 42;
   const token = ethers.getAddress(options.token ?? ethers.ZeroAddress);
@@ -74,6 +75,7 @@ async function main() {
   const ownerHash = mimc(owner, entropy);
   const saltHash = mimc(salt, pepper);
   const commit = mimc(ownerHash, saltHash);
+  console.log({commit})
   const shadowling = await shadowlings.getShadowling(commit);
 
   const userOp = {

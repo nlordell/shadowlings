@@ -10,3 +10,4 @@ Shadow deposit accounts using Nick's method and ZKP.
 # Setup
 
 - `git submodule update --init --recursive`
+- `cd docker && docker compose up -d`

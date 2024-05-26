@@ -47,7 +47,7 @@ export default function BalanceView({ address, salt, token }: Props): JSX.Elemen
             salt={salt}
             token={token}
             maxAmount={balance}
-            handleSubmit={() => { setShowWithdrawDialog(false) }}
+            handleClose={() => { setShowWithdrawDialog(false) }}
         />
     </ Typography>)
 }
