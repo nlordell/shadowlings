@@ -3,14 +3,19 @@
   "license": "GPL-3.0-only",
   "private": true,
   "scripts": {
+    "app:run": "cd app && pnpm start",
     "circuits:compile": "node ./circuits/compile.js",
-    "circuits:setup": "node ./circuits/setup.js",
     "circuits:proof": "node ./circuits/proof.js",
+    "circuits:setup": "node ./circuits/setup.js",
+    "contracts:fmt": "make -C contracts fmt",
     "contracts:test": "make -C contracts test",
-    "tools:userop": "node ./tools/userop.js",
+    "docker:down": "docker compose -f docker/docker-compose.yaml down",
+    "docker:up": "docker compose -f docker/docker-compose.yaml up",
     "tools:fund": "node ./tools/fund.js",
-    "tools:recovery": "node ./tools/recovery.js",
     "tools:recover": "node ./tools/recover.js",
-    "app:run": "cd app && pnpm start"
+    "tools:recovery": "node ./tools/recovery.js",
+    "tools:userop": "node ./tools/userop.js",
+    "start": "pnpm run docker:up",
+    "prepare": "pnpm run circuits:compile"
   }
 }

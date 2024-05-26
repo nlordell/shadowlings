@@ -14,16 +14,14 @@ deploy:
 .PHONY: foundry
 foundry:
 	docker run --rm \
-		-v $$(pwd):/contracts:z \
-		-w /contracts \
+		-v $$(pwd):/src:z -w /src \
 		ghcr.io/paradigmxyz/foundry-alphanet:latest \
 		--foundry-command "$(CMD)"
 
 .PHONY: fmt
 fmt:
 	docker run --rm \
-		-v $$(pwd):/contracts:z \
-		-w /contracts \
+		-v $$(pwd):/src:z -w /src \
 		--entrypoint /bin/bash \
 		ghcr.io/paradigmxyz/foundry-alphanet:latest \
 		-c 'forge fmt script/ src/*.sol test/'
