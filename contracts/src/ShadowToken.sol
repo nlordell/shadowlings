@@ -10,5 +10,6 @@ contract ShadowToken is ERC20 {
     function mint(address to, uint256 amount) external returns (bool success) {
         require(amount < 100 ether);
         _mint(to, amount);
+        success = true;
     }
 }
