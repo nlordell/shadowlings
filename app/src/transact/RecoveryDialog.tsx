@@ -2,12 +2,13 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import TextField from '@mui/material/TextField';
-import { Button, CircularProgress, DialogActions, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, DialogActions, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { createRecoveryData } from '../utils/proof';
 import { queryRecoveryRegistrations } from '../utils/web3';
 import { SHADOWLING_ADDRESS, encodeRecovery } from '../utils/invoker';
+import { copyToClipboard } from '../utils/clipboard';
 
 
 export interface Props {
@@ -22,6 +23,7 @@ export default function RecoveryDialog({ open, handleClose }: Props): JSX.Elemen
     const [saltHash, setSaltHash] = useState<string | undefined>()
     useEffect(() => {
         setSaltHash(undefined)
+        setRecoverParams("")
         const loadSaltHash = async() => {
             try {
                 const address = ethers.getAddress(shadowAddress)
@@ -69,7 +71,7 @@ export default function RecoveryDialog({ open, handleClose }: Props): JSX.Elemen
             aria-describedby="alert-dialog-description"
         >
             <DialogTitle id="alert-dialog-title">
-                {"Register Recovery"}
+                {"Recover Shadowling"}
             </DialogTitle>
             <DialogContent style={{ padding: "8px" }}>
                 <TextField 
@@ -79,10 +81,10 @@ export default function RecoveryDialog({ open, handleClose }: Props): JSX.Elemen
                     onChange={ (e) => setShadowAddress(e.target.value)}
                     style={{ margin: "8px" }}
                     />
-                {saltHash && (<Typography>{saltHash}</Typography>)}
-                {recoverParams && (<Typography>{recoverParams}</Typography>)}
+                {recoverParams && (<Box component="div" sx={{ overflow: "scroll" }}>{recoverParams}</Box>)}
                 <DialogActions>
-                    {!processing && <Button size="small" onClick={() => buildRecoverData()}>Recover</Button>}
+                    {!processing && !!saltHash && !recoverParams && <Button size="small" onClick={() => buildRecoverData()}>Recover</Button>}
+                    {!processing && !!recoverParams && <Button size="small" onClick={() => copyToClipboard({ value: recoverParams })}>Copy</Button>}
                     {processing && <CircularProgress size={24} />}
                 </DialogActions>
             </DialogContent>

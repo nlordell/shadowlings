@@ -59,7 +59,7 @@ export default function WithdrawDialog({ open, handleClose, shadowAddress, salt,
             aria-describedby="alert-dialog-description"
         >
             <DialogTitle id="alert-dialog-title">
-                {"Withdraw Assets"}
+                {`Withdraw ${token?.name || "Ether"}`}
             </DialogTitle>
             <DialogContent style={{ padding: "8px" }}>
                 <TextField 
