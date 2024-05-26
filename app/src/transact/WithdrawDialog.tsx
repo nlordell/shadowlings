@@ -7,13 +7,14 @@ import { useCallback, useState } from 'react';
 import { ethers } from 'ethers';
 import { buildSignature, createWithdrawData } from '../utils/proof';
 import { globalBundler } from '../utils/userops';
+import { Token } from '../utils/tokens';
 
 export interface Props {
     open: boolean,
     handleClose: () => void,
     shadowAddress: string,
     salt: string,
-    token: string | undefined,
+    token: Token | undefined,
     maxAmount: string | undefined
 }
 
@@ -30,9 +31,9 @@ export default function WithdrawDialog({ open, handleClose, shadowAddress, salt,
             const entropy = localStorage.getItem("entropy")!!
             // TODO: chech that entropy is set
             const targetAddress = ethers.getAddress(target)
-            const amountAtoms = ethers.parseEther(amount)
+            const amountAtoms = ethers.parseUnits(amount, token?.decimals)
             const withdrawData = await createWithdrawData(
-                shadowAddress, owner, entropy, salt, token || ethers.ZeroAddress, targetAddress, amountAtoms
+                shadowAddress, owner, entropy, salt, token?.address || ethers.ZeroAddress, targetAddress, amountAtoms
             )
 
             console.log(withdrawData)

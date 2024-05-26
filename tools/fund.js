@@ -23,7 +23,7 @@ async function main() {
       ...new Set([
         ...tokens,
         ethers.ZeroAddress,
-        "0xbc47dc571C1D012BE7D1b0F098F08f3618088AAD",
+        "0xDF12F1c4cc6fab61403bBBEC5A2BfA9638Ed2A05",
       ]),
     ];
   }

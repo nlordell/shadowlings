@@ -3,18 +3,22 @@ import { ethers } from "ethers"
 import { useCallback, useEffect, useState } from "react"
 import { globalProvier } from "../utils/web3"
 import WithdrawDialog from "../transact/WithdrawDialog"
+import { Token, getToken } from "../utils/tokens"
 
 export interface Props {
     address: string,
     salt: string,
-    token?: string
+    token?: Token
 }
 
-const loadBalances = async(address: string, token: string | undefined): Promise<bigint> => {
+const loadBalances = async(address: string, token: Token | undefined): Promise<bigint> => {
     if (!token)
-         return globalProvier().getBalance(address)
-    else
-        throw Error("Not implemented")
+        return globalProvier().getBalance(address)
+    else {
+        const t = getToken(token.address)
+        console.log(t)
+        return await t.balanceOf(address)
+    }
 }
 
 export default function BalanceView({ address, salt, token }: Props): JSX.Element {
@@ -22,10 +26,10 @@ export default function BalanceView({ address, salt, token }: Props): JSX.Elemen
     const [showWithdrawDialog, setShowWithdrawDialog] = useState(false)
     const [balance, setBalance] = useState<string|undefined>()
 
-    const refreshBalances = useCallback(async (address: string, token: string | undefined) => {
+    const refreshBalances = useCallback(async (address: string, token: Token | undefined) => {
         try {
             const balance = await loadBalances(address, token)
-            setBalance(ethers.formatEther(balance))
+            setBalance(ethers.formatUnits(balance, token?.decimals))
         } catch (e) {
             console.error(e)
         }
@@ -38,7 +42,7 @@ export default function BalanceView({ address, salt, token }: Props): JSX.Elemen
         return () => clearInterval(currentTask);
     }, [address, token])
     return (<Typography>
-        {token || "Ether"}: {balance || "Loading..."}
+        {token?.name || "Ether"}: {balance || "Loading..."}
         <Button size="small" onClick={() => setShowWithdrawDialog(true)}>Withdraw</Button>
 
         <WithdrawDialog 

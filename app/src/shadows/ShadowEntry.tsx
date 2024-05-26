@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import RegisterDialog from '../transact/RegisterDialog';
 import { queryRecoveryRegistrations } from '../utils/web3';
 import AddressView from '../status/AddressView';
+import { KNOWN_TOKEN } from '../utils/tokens';
 
 export interface Props {
     owner: string,
@@ -29,6 +30,7 @@ export default function ShadowEntry({ shadow, onRemove }: Props): JSX.Element {
     return (<Card style={{ margin: "8px" }}>
         <AddressView address={shadow.address} size={60} info={`Salt: ${shadow.salt}`} />
         <BalanceView address={shadow.address} salt={shadow.salt} />
+        {KNOWN_TOKEN.map((token) => (<BalanceView address={shadow.address} salt={shadow.salt} token={token}/>))}
         <CardActions>
             <Button size="small" onClick={() => onRemove(shadow.address)}>Remove</Button>
             {!saltHash && (<Button size="small" onClick={() => setShowRegisterDialog(true)}>Register Recovery</Button>)}

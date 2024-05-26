@@ -1,7 +1,7 @@
 import { BigNumberish, ethers } from "ethers";
 import { Proof } from "zokrates-js";
 
-export const SHADOWLING_ADDRESS = "0xB505c51EAceBB5a0dbdB8ffc4974E052fA66fE4D";
+export const SHADOWLING_ADDRESS = "0x7bD5Fe83Aa81AD5d8992f25bb935c43507929fb2";
 const SHADOWLING_ABI = [
   `function ENTRY_POINT() view returns (address)`,
   `function getShadowling(uint256 commit) view returns (address)`,
