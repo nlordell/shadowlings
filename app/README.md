@@ -20,6 +20,7 @@ Add in the `resolve` block the following code:
 ```js
 fallback: {
     buffer: require.resolve('buffer/'),
+    assert: require.resolve('assert/'),
 },
 ```
 

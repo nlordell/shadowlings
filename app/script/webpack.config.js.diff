@@ -1,0 +1,25 @@
+--- node_modules/react-scripts/config/webpack.config.js	2024-05-26 15:00:24.114223040 +0200
++++ node_modules/react-scripts/config/webpack.config.custom.js	2024-05-26 14:59:41.618424149 +0200
+@@ -303,6 +303,10 @@
+       ],
+     },
+     resolve: {
++      fallback: {
++        buffer: require.resolve('buffer/'),
++        assert: require.resolve('assert/'),
++      },
+       // This allows you to set a fallback for where webpack should look for modules.
+       // We placed these paths second because we want `node_modules` to "win"
+       // if there are any conflicts. This matches Node resolution mechanism.
+@@ -604,6 +608,11 @@
+       ].filter(Boolean),
+     },
+     plugins: [
++
++      new webpack.ProvidePlugin({
++        process: "process/browser",
++        Buffer: ["buffer", "Buffer"],
++      }),
+       // Generates an `index.html` file with the <script> injected.
+       new HtmlWebpackPlugin(
+         Object.assign(

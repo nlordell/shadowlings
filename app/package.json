@@ -26,6 +26,7 @@
     "zokrates-js": "^1.1.9"
   },
   "scripts": {
+    "prepare": "patch node_modules/react-scripts/config/webpack.config.js script/webpack.config.js.diff",
     "start": "PORT=3006 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
