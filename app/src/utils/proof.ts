@@ -216,12 +216,6 @@ export const createRecoveryData = async (
 
   const ownerHash = await hash(owner, encodedEntropy);
   const commit = await hash(ownerHash, saltHash)
-  /*
-  public field expected_commit_hash,
-    public field owner,
-    public field salt_hash,
-    private field entropy
-    */
   const { witness } = zok.computeWitness(
     artifact,
     [commit, owner, saltHash, encodedEntropy].map(toFieldElement)

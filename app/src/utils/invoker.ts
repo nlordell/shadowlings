@@ -7,7 +7,7 @@ const SHADOWLING_ABI = [
   `function getShadowling(uint256 commit) view returns (address)`,
   `function execute(uint256 commit, address token, address to, uint256 amount)`,
   `function register(uint256 commit, uint256 saltHash)`,
-  `function executeWithRecovery(uint256 commit, uint256 saltHash, address token, address to, uint256 amount, (uint256[2], uint256[2][2], uint256[2]) proof) external returns (bool success)`
+  `function executeWithRecovery(uint256 commit, uint256 saltHash, address token, address to, uint256 amount, ((uint256, uint256), (uint256[2], uint256[2]), (uint256, uint256)) proof) external returns (bool success)`
 ];
 const SHADOWLING = new ethers.Interface(SHADOWLING_ABI);
 
