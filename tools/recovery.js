@@ -35,7 +35,9 @@ const recoverCommand = new Command("recover")
 
 async function register(options) {
   const owner = ethers.getAddress(options.owner);
-  const entropy = BigInt(options.entropy ?? 0);
+  const entropy = options.entropy
+    ? BigInt(ethers.hexlify(ethers.toUtf8Bytes(options.entropy)))
+    : 0n;
   const salt = BigInt(options.salt);
   const pepper = 42;
 
@@ -83,7 +85,10 @@ async function register(options) {
   const ownerHash = mimc(owner, entropy);
   const saltHash = mimc(salt, pepper);
   const commit = mimc(ownerHash, saltHash);
+  console.log({ entropy, commit });
+
   const shadowling = await shadowlings.getShadowling(commit);
+  console.log({ shadowling });
 
   const userOp = {
     sender: await shadowlings.getAddress(),
@@ -156,7 +161,9 @@ async function register(options) {
 
 async function recover(options) {
   const owner = ethers.getAddress(options.owner);
-  const entropy = BigInt(options.entropy ?? 0);
+  const entropy = options.entropy
+    ? BigInt(ethers.hexlify(ethers.toUtf8Bytes(options.entropy)))
+    : 0n;
   const saltHash = BigInt(options.saltHash);
   const token = ethers.getAddress(options.token ?? ethers.ZeroAddress);
   const to = ethers.getAddress(options.to);
@@ -191,6 +198,7 @@ async function recover(options) {
 
   const ownerHash = mimc(owner, entropy);
   const commit = mimc(ownerHash, saltHash);
+  console.log({ entropy, commit });
 
   const shadowling = await shadowlings.getShadowling(commit);
   const balance = `${
