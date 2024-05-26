@@ -38,7 +38,7 @@ export default function BalanceView({ address, salt, token }: Props): JSX.Elemen
     useEffect(() => {
         // TODO: don't query new task if previous one was not finished
         refreshBalances(address, token)
-        const currentTask = setInterval(() => refreshBalances(address, token), 10000)
+        const currentTask = setInterval(() => refreshBalances(address, token), 5000)
         return () => clearInterval(currentTask);
     }, [address, token])
     return (<Typography>

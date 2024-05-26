@@ -4,6 +4,7 @@ import { promises as fs } from "fs";
 import { initialize } from "zokrates-js";
 
 import { buildMimcHasher, fromHex, toFieldElement } from "../circuits/util.js";
+import deployments from "../contracts/deployments.json" with { type: "json" };
 
 const options = program
   .name("shadowlings-userop")
@@ -24,8 +25,10 @@ const options = program
 
 async function main() {
   const owner = ethers.getAddress(options.owner);
-  const entropy = BigInt(ethers.hexlify(ethers.toUtf8Bytes(options.entropy || "0")));
-  console.log({entropy})
+  const entropy = BigInt(
+    ethers.hexlify(ethers.toUtf8Bytes(options.entropy || "0")),
+  );
+  console.log({ entropy });
   const salt = BigInt(options.salt);
   const pepper = 42;
   const token = ethers.getAddress(options.token ?? ethers.ZeroAddress);
@@ -39,8 +42,9 @@ async function main() {
     options.bundlerUrl ?? "http://localhost:3000/rpc",
   );
 
+  const { chainId } = await provider.getNetwork();
   const shadowlings = new ethers.Contract(
-    options.shadowlings ?? "0xB505c51EAceBB5a0dbdB8ffc4974E052fA66fE4D",
+    options.shadowlings ?? deployments[chainId].Shadowlings,
     [
       `function ENTRY_POINT() view returns (address)`,
       `function getShadowling(uint256 commit) view returns (address)`,
@@ -75,14 +79,14 @@ async function main() {
       `function balanceOf(address) view returns (uint256)`,
     ],
     provider,
-  )
+  );
 
   const mimc = await buildMimcHasher();
 
   const ownerHash = mimc(owner, entropy);
   const saltHash = mimc(salt, pepper);
   const commit = mimc(ownerHash, saltHash);
-  console.log({commit})
+  console.log({ commit });
   const shadowling = await shadowlings.getShadowling(commit);
 
   const userOp = {
@@ -125,9 +129,7 @@ async function main() {
       ethers.formatEther(await provider.getBalance(shadowling))
     } ETH`;
   } else {
-    balance = `${
-      ethers.formatEther(await erc20.balanceOf(shadowling))
-    } ETH`;
+    balance = `${ethers.formatEther(await erc20.balanceOf(shadowling))} ETH`;
   }
   const prefund = `${
     ethers.formatEther(await entryPoint.balanceOf(shadowlings))

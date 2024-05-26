@@ -15,7 +15,11 @@ async function main() {
   const to = ethers.getAddress(options.to);
   const data = options.data;
 
-  const transaction = await signer.sendTransaction({ from: await signer.getAddress(), to, data });
+  const transaction = await signer.sendTransaction({
+    from: await signer.getAddress(),
+    to,
+    data,
+  });
   const receipt = await transaction.wait();
 
   console.log(receipt);

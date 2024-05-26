@@ -15,7 +15,7 @@ services:
     volumes:
       - ..:/src
     ports:
-      - 3006:3006
+      - 3074:3074
 
   node:
     image: ghcr.io/paradigmxyz/foundry-alphanet:latest
@@ -54,16 +54,3 @@ services:
       - ../contracts:/src
     depends_on:
       - node
-
-  prefund:
-    image: ghcr.io/paradigmxyz/foundry-alphanet:latest
-    restart: on-failure:10
-    command:
-      - --foundry-command
-      - 'forge script script/Prefunding.s.sol:Prefunding --rpc-url http://node:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast -vvv'
-    working_dir: /src
-    volumes:
-      - ../contracts:/src
-    depends_on:
-      - node
-      - bundler

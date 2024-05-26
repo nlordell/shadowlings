@@ -4,6 +4,7 @@ import { promises as fs } from "fs";
 import { initialize } from "zokrates-js";
 
 import { buildMimcHasher, fromHex, toFieldElement } from "../circuits/util.js";
+import deployments from "../contracts/deployments.json" with { type: "json" };
 
 const registerCommand = new Command("register")
   .description("Register a salt hash publically for recovery")
@@ -45,8 +46,9 @@ async function register(options) {
     options.bundlerUrl ?? "http://localhost:3000/rpc",
   );
 
+  const { chainId } = await provider.getNetwork();
   const shadowlings = new ethers.Contract(
-    options.shadowlings ?? "0xB505c51EAceBB5a0dbdB8ffc4974E052fA66fE4D",
+    options.shadowlings ?? deployments[chainId].Shadowlings,
     [
       `function ENTRY_POINT() view returns (address)`,
       `function getShadowling(uint256 commit) view returns (address)`,
@@ -164,8 +166,9 @@ async function recover(options) {
     options.rpcUrl ?? "http://localhost:8545",
   );
 
+  const { chainId } = await provider.getNetwork();
   const shadowlings = new ethers.Contract(
-    options.shadowlings ?? "0xB505c51EAceBB5a0dbdB8ffc4974E052fA66fE4D",
+    options.shadowlings ?? deployments[chainId].Shadowlings,
     [
       `function getShadowling(uint256 commit) view returns (address)`,
       `function executeWithRecovery(

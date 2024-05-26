@@ -1,6 +1,8 @@
 import { program } from "commander";
 import { ethers } from "ethers";
 
+import deployments from "../contracts/deployments.json" with { type: "json" };
+
 const options = program
   .name("shadowlings-fund")
   .option("--token <address>", "The token to mint")
@@ -17,13 +19,14 @@ async function main() {
   const to = ethers.getAddress(options.to);
   const value = ethers.parseEther(options.amount);
 
+  const { chainId } = await provider.getNetwork();
   let tokens = [ethers.getAddress(options.token ?? ethers.ZeroAddress)];
   if (options.demo) {
     tokens = [
       ...new Set([
         ...tokens,
         ethers.ZeroAddress,
-        "0xDF12F1c4cc6fab61403bBBEC5A2BfA9638Ed2A05",
+        deployments[chainId].ShadowToken,
       ]),
     ];
   }
@@ -42,6 +45,30 @@ async function main() {
     const transaction = await signer.sendTransaction(transactionData);
     const receipt = await transaction.wait();
 
+    console.log(receipt);
+  }
+
+  const shadowlings = new ethers.Contract(
+    options.shadowlings ?? deployments[chainId].Shadowlings,
+    [
+      `function ENTRY_POINT() view returns (address)`,
+    ],
+    provider,
+  );
+  const entryPoint = new ethers.Contract(
+    await shadowlings.ENTRY_POINT(),
+    [
+      `function balanceOf(address sender) view returns (uint256 amount)`,
+      `function depositTo(address account) public payable`,
+    ],
+    signer,
+  );
+
+  if (await entryPoint.balanceOf(shadowlings) < ethers.parseEther("1.0")) {
+    const transaction = await entryPoint.depositTo(shadowlings, {
+      value: ethers.parseEther("10.0"),
+    });
+    const receipt = await transaction.wait();
     console.log(receipt);
   }
 }

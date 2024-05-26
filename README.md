@@ -42,6 +42,8 @@ participants.
 3. Host the interface and run a local development network with an ERC-4337
    bundler with Docker compose: `pnpm start`.
    - To shutdown the containers: `pnpm run docker:down`.
+   - To fund local accounts for testing:
+     `pnpm run tools:fund --demo --to <address> --amount <amount>`
 
 ## Development
 
@@ -84,3 +86,6 @@ proofs:
   - `pnpm run tools:fund --to 0x04Cc094eBDf8ada9e5DcbDEb47ADC1DDc7C8E63C --amount 0.42`
 - Trigger recovery:
   - `yarn safe submit-multi 0xa2b04c6a053AB2EFBC699f5DD0F0957742A41629 examples/shadowling_recovery_encoded.json`
+
+Shadowlings: 0x7bD5Fe83Aa81AD5d8992f25bb935c43507929fb2 ShadowToken:
+0x1F8B673B2e8663C833FFE804eD1536749F679F6c
