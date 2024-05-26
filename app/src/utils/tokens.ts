@@ -1,28 +1,28 @@
-import { ethers } from "ethers"
-import { globalProvier } from "./web3"
+import { ethers } from "ethers";
+import { globalProvier } from "./web3";
 
-import deployments from "../config/deployments.json"
+import deployments from "../config/deployments.json";
 
 export interface Token {
-    address: string
-    decimals: number
-    name: string
-    symbol: string
+  address: string;
+  decimals: number;
+  name: string;
+  symbol: string;
 }
 
 export const KNOWN_TOKEN: Token[] = [{
-    address: deployments[31337].ShadowToken,
-    decimals: 18,
-    name: "Shadow Token",
-    symbol: "SHD"
-}]
+  address: deployments[31337].ShadowToken,
+  decimals: 18,
+  name: "Shadow Token",
+  symbol: "SHD",
+}];
 
 const TOKEN_ABI = [
-    "function balanceOf(address) view returns (uint256)"
-]
+  "function balanceOf(address) view returns (uint256)",
+];
 
-const TOKEN = new ethers.Interface(TOKEN_ABI)
+const TOKEN = new ethers.Interface(TOKEN_ABI);
 
 export const getToken = (address: string): ethers.Contract => {
-    return new ethers.Contract(address, TOKEN, globalProvier())
-}
+  return new ethers.Contract(address, TOKEN, globalProvier());
+};

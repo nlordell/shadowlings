@@ -5,13 +5,13 @@ import registerArtifactJson from "../config/register/artifacts.json";
 import registerKeypairJson from "../config/register/keypair.json";
 import recoveryArtifactJson from "../config/recovery/artifacts.json";
 import recoveryKeypairJson from "../config/recovery/keypair.json";
-import { Abi, CompilationArtifacts, Proof, initialize } from "zokrates-js";
+import { Abi, CompilationArtifacts, initialize, Proof } from "zokrates-js";
 import { buildMimcSponge, MimcSponge } from "circomlibjs";
 import {
-  UserOperation,
   buildUserOps,
   calculateUserOpHash,
   entrypoint,
+  UserOperation,
 } from "./userops";
 import { encodeExecute, encodeRegister } from "./invoker";
 
@@ -24,7 +24,7 @@ const globalMimc = async (): Promise<MimcSponge> => {
 
 export const hash = async (...parts: string[]): Promise<string> => {
   const mimc = await globalMimc();
-  return `0x${mimc.F.toString(mimc.multiHash(parts), 16).padStart(64, '0')}`;
+  return `0x${mimc.F.toString(mimc.multiHash(parts), 16).padStart(64, "0")}`;
 };
 
 export function fromHex(a: string) {
@@ -34,7 +34,9 @@ export function fromHex(a: string) {
 export function fieldify(value: string) {
   return ethers.toBeHex(
     BigInt(value) &
-      BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+      BigInt(
+        "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      ),
   );
 }
 
@@ -42,7 +44,7 @@ export const calculateCommit = async (
   owner: string,
   entropy: string,
   salt: string,
-  pepper: string = "0x2a"
+  pepper: string = "0x2a",
 ): Promise<{
   ownerHash: string;
   saltHash: string;
@@ -50,7 +52,7 @@ export const calculateCommit = async (
 }> => {
   const ownerHash = await hash(
     owner,
-    ethers.hexlify(ethers.toUtf8Bytes(entropy))
+    ethers.hexlify(ethers.toUtf8Bytes(entropy)),
   );
   const saltHash = await hash(salt, pepper);
   return {
@@ -92,7 +94,7 @@ export const createWithdrawData = async (
   salt: string,
   token: string,
   target: string,
-  amount: bigint
+  amount: bigint,
 ): Promise<{
   entrypoint: string;
   nullifier: string;
@@ -105,7 +107,7 @@ export const createWithdrawData = async (
   const { saltHash, ownerHash, commit } = await calculateCommit(
     owner,
     entropy,
-    salt
+    salt,
   );
   console.log({ entropy });
   console.log({ commit });
@@ -117,7 +119,7 @@ export const createWithdrawData = async (
   const nullifier = await hash(executionHash, saltHash);
   const { witness } = zok.computeWitness(
     artifact,
-    [commit, nullifier, executionHash, ownerHash, salt].map(toFieldElement)
+    [commit, nullifier, executionHash, ownerHash, salt].map(toFieldElement),
   );
   const proof = zok.generateProof(artifact.program, witness, provingKey);
   console.log(proof);
@@ -161,7 +163,7 @@ export const createRegisterData = async (
   const { saltHash, ownerHash, commit } = await calculateCommit(
     owner,
     entropy,
-    salt
+    salt,
   );
   console.log({ entropy });
   console.log({ commit });
@@ -174,7 +176,9 @@ export const createRegisterData = async (
   const nullifier = await hash(executionHash, saltHash);
   const { witness } = zok.computeWitness(
     artifact,
-    [commit, nullifier, executionHash, saltHash, ownerHash, salt].map(toFieldElement)
+    [commit, nullifier, executionHash, saltHash, ownerHash, salt].map(
+      toFieldElement,
+    ),
   );
   const proof = zok.generateProof(artifact.program, witness, provingKey);
   console.log(proof);
@@ -212,18 +216,18 @@ export const createRecoveryData = async (
   const zok = await initialize();
   const provingKey = loadRecoveryProvingKey();
   const artifact = loadRecoveryArtifact();
-  const encodedEntropy = ethers.hexlify(ethers.toUtf8Bytes(entropy))
+  const encodedEntropy = ethers.hexlify(ethers.toUtf8Bytes(entropy));
 
   const ownerHash = await hash(owner, encodedEntropy);
-  const commit = await hash(ownerHash, saltHash)
+  const commit = await hash(ownerHash, saltHash);
   const { witness } = zok.computeWitness(
     artifact,
-    [commit, owner, saltHash, encodedEntropy].map(toFieldElement)
+    [commit, owner, saltHash, encodedEntropy].map(toFieldElement),
   );
   const proof = zok.generateProof(artifact.program, witness, provingKey);
   console.log(proof);
   return {
-    commit, 
+    commit,
     proof,
   };
 };
@@ -232,6 +236,6 @@ export const buildSignature = (nullifier: string, proof: Proof) => {
   const p: any = proof.proof;
   return ethers.AbiCoder.defaultAbiCoder().encode(
     ["uint256", "tuple(uint256[2], uint256[2][2], uint256[2])"],
-    [nullifier, [p.a, p.b, p.c]]
+    [nullifier, [p.a, p.b, p.c]],
   );
 };
