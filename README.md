@@ -82,10 +82,5 @@ proofs:
 
 - Create Safe:
   - `yarn safe create --nonce 0 --l2 --factory 0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67 --singleton 0x29fcB43b46531BcA003ddC8FCB67FFE91900C762`
-- Fund Safe:
-  - `pnpm run tools:fund --to 0x04Cc094eBDf8ada9e5DcbDEb47ADC1DDc7C8E63C --amount 0.42`
 - Trigger recovery:
   - `yarn safe submit-multi 0xa2b04c6a053AB2EFBC699f5DD0F0957742A41629 examples/shadowling_recovery_encoded.json`
-
-Shadowlings: 0x7bD5Fe83Aa81AD5d8992f25bb935c43507929fb2 ShadowToken:
-0x1F8B673B2e8663C833FFE804eD1536749F679F6c
