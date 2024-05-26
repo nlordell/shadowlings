@@ -21,5 +21,5 @@ Shadow deposit accounts using Nick's method and ZKP.
   - `pnpm run tools:fund --to 0x04Cc094eBDf8ada9e5DcbDEb47ADC1DDc7C8E63C --amount 0.42`
 
 - Trigger recovery:
-  - `yarn safe submit-multi 0x0330Ca64d6FED94e9392EB212b27B129055a0A2b examples/shadowling_recovery.json`
+  - `yarn safe submit-multi 0x0330Ca64d6FED94e9392EB212b27B129055a0A2b examples/shadowling_recovery_encoded.json`
   - `pnpm run tools:recover --to 0x0330Ca64d6FED94e9392EB212b27B129055a0A2b --data`
