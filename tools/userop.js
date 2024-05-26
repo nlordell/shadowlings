@@ -40,7 +40,7 @@ async function main() {
   );
 
   const shadowlings = new ethers.Contract(
-    options.shadowlings ?? "0x011a5d338bDAA029776DC1dd56D93EC31b46F0B8",
+    options.shadowlings ?? "0xB505c51EAceBB5a0dbdB8ffc4974E052fA66fE4D",
     [
       `function ENTRY_POINT() view returns (address)`,
       `function getShadowling(uint256 commit) view returns (address)`,
@@ -69,6 +69,13 @@ async function main() {
     ],
     provider,
   );
+  const erc20 = new ethers.Contract(
+    token,
+    [
+      `function balanceOf(address) view returns (uint256)`,
+    ],
+    provider,
+  )
 
   const mimc = await buildMimcHasher();
 
@@ -112,9 +119,16 @@ async function main() {
   const executionHash = fieldify(userOpHash);
   const nullifier = mimc(executionHash, saltHash);
 
-  const balance = `${
-    ethers.formatEther(await provider.getBalance(shadowling))
-  } ETH`;
+  let balance;
+  if (token === ethers.ZeroAddress) {
+    balance = `${
+      ethers.formatEther(await provider.getBalance(shadowling))
+    } ETH`;
+  } else {
+    balance = `${
+      ethers.formatEther(await erc20.balanceOf(shadowling))
+    } ETH`;
+  }
   const prefund = `${
     ethers.formatEther(await entryPoint.balanceOf(shadowlings))
   } ETH`;

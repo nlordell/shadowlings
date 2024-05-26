@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {PackedUserOperation, UserOperationLib} from "account-abstraction/core/UserOperationLib.sol";
 import {Test, console} from "forge-std/Test.sol";
 
+import {ShadowToken} from "../src/ShadowToken.sol";
 import {Shadowlings, Verifier, RecoveryVerifier, RegisterVerifier} from "../src/Shadowlings.sol";
 import {Pairing} from "../src/verifiers/main/Verifier.sol";
 import {Pairing as RecoveryPairing} from "../src/verifiers/recovery/Verifier.sol";
@@ -12,6 +13,7 @@ import {Pairing as RegisterPairing} from "../src/verifiers/register/Verifier.sol
 contract ShadowlingsTest is Test {
     address entryPoint = vm.addr(uint256(keccak256("secret")));
     Shadowlings shadowlings = new Shadowlings(entryPoint);
+    ShadowToken shadowToken = new ShadowToken();
 
     function setUp() public {}
 
@@ -32,6 +34,25 @@ contract ShadowlingsTest is Test {
 
         assertEq(to.balance, 1 ether);
         assertEq(shadowling.balance, 0);
+    }
+
+    function test_ExecuteToken() public {
+        uint256 commit = uint256(uint248(uint256(keccak256("commit"))));
+        address token = address(shadowToken);
+        address to = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
+        uint256 amount = 1 ether;
+
+        address shadowling = shadowlings.getShadowling(commit);
+        shadowToken.mint(shadowling, amount);
+
+        assertEq(shadowToken.balanceOf(to), 0);
+        assertEq(shadowToken.balanceOf(shadowling), 1 ether);
+
+        vm.prank(entryPoint);
+        shadowlings.execute(commit, token, to, amount);
+
+        assertEq(shadowToken.balanceOf(to), 1 ether);
+        assertEq(shadowToken.balanceOf(shadowling), 0);
     }
 
     function test_UserOperation() public {

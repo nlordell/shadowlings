@@ -9,7 +9,7 @@ test:
 
 .PHONY: deploy
 deploy:
-	$(MAKE) foundry CMD="forge script script/Shadowlings.s.sol:ShadowlingsDeploy --rpc-url $(RPC_URL) --private-key $(PK) --broadcast -vvv"
+	$(MAKE) foundry CMD="forge script script/Deploy.s.sol:Deploy --rpc-url $(RPC_URL) --private-key $(PK) --broadcast -vvv"
 
 .PHONY: foundry
 foundry:

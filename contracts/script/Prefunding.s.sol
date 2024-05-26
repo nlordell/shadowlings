@@ -14,7 +14,7 @@ contract Prefunding is Script {
         vm.startBroadcast();
 
         address entryPoint = 0x0000000071727De22E5E9d8BAf0edAc6f37da032;
-        address shadowlings = 0x011a5d338bDAA029776DC1dd56D93EC31b46F0B8;
+        address shadowlings = 0xB505c51EAceBB5a0dbdB8ffc4974E052fA66fE4D;
 
         (bool success,) = entryPoint.call{value: 1 ether}(abi.encodeWithSignature("depositTo(address)", shadowlings));
         success;

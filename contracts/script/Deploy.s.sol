@@ -4,9 +4,10 @@ pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
 
+import {ShadowToken} from "../src/ShadowToken.sol";
 import {Shadowlings} from "../src/Shadowlings.sol";
 
-contract ShadowlingsDeploy is Script {
+contract Deploy is Script {
     function run() external {
         vm.startBroadcast();
 
@@ -15,6 +16,9 @@ contract ShadowlingsDeploy is Script {
 
         Shadowlings shadowlings = new Shadowlings{salt: salt}(entryPoint);
         console.log(address(shadowlings));
+
+        ShadowToken token = new ShadowToken{salt: salt}();
+        console.log(address(token));
 
         vm.stopBroadcast();
     }

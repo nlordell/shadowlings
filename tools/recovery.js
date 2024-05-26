@@ -46,7 +46,7 @@ async function register(options) {
   );
 
   const shadowlings = new ethers.Contract(
-    options.shadowlings ?? "0x011a5d338bDAA029776DC1dd56D93EC31b46F0B8",
+    options.shadowlings ?? "0xB505c51EAceBB5a0dbdB8ffc4974E052fA66fE4D",
     [
       `function ENTRY_POINT() view returns (address)`,
       `function getShadowling(uint256 commit) view returns (address)`,
@@ -165,7 +165,7 @@ async function recover(options) {
   );
 
   const shadowlings = new ethers.Contract(
-    options.shadowlings ?? "0x011a5d338bDAA029776DC1dd56D93EC31b46F0B8",
+    options.shadowlings ?? "0xB505c51EAceBB5a0dbdB8ffc4974E052fA66fE4D",
     [
       `function getShadowling(uint256 commit) view returns (address)`,
       `function executeWithRecovery(
