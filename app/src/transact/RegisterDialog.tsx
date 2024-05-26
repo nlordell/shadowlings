@@ -6,9 +6,9 @@ import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import TextField from '@mui/material/TextField';
-import { Button, CardActionArea, DialogActions } from '@mui/material';
+import { Button, CardActionArea, CircularProgress, DialogActions } from '@mui/material';
 import { encodeBase32 } from 'geohashing';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { buildSignature, createRegisterData, createWithdrawData } from '../utils/proof';
 import { globalBundler } from '../utils/userops';
@@ -23,7 +23,9 @@ export interface Props {
 }
 
 export default function RegisterDialog({ open, handleClose, shadowAddress, salt }: Props): JSX.Element {
+    const [processing, setProcessing] = useState(false)
     const registerRecovery = useCallback(async() => {
+        setProcessing(true)
         try {
             const owner = ethers.getAddress(localStorage.getItem("owner")!!)
             const entropy = localStorage.getItem("entropy")!!
@@ -40,8 +42,10 @@ export default function RegisterDialog({ open, handleClose, shadowAddress, salt 
             handleClose()
         } catch (e) {
             console.error(e)
+        } finally {
+            setProcessing(false)
         }
-    }, [shadowAddress, salt, handleClose])
+    }, [shadowAddress, salt, handleClose, setProcessing])
 
     return (
         <Dialog 
@@ -54,9 +58,10 @@ export default function RegisterDialog({ open, handleClose, shadowAddress, salt 
                 {"Register Recovery"}
             </DialogTitle>
             <DialogContent style={{ padding: "8px" }}>
-                Some Explainer Text
+                Registering for recovery will submit a hash of the connection to the owner account onchain. With this it is possible to easily access the deposit address even in case the credentials are lost.
                 <DialogActions>
-                    <Button size="small" onClick={() => registerRecovery()}>Submit</Button>
+                    {!processing && <Button size="small" onClick={() => registerRecovery()}>Submit</Button>}
+                    {processing && <CircularProgress size={24} />}
                 </DialogActions>
             </DialogContent>
         </Dialog>

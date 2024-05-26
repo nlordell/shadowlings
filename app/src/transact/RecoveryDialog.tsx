@@ -2,8 +2,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import TextField from '@mui/material/TextField';
-import { Button, DialogActions, Typography } from '@mui/material';
-import React, { useCallback, useEffect } from 'react';
+import { Button, CircularProgress, DialogActions, Typography } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { createRecoveryData } from '../utils/proof';
 import { queryRecoveryRegistrations } from '../utils/web3';
@@ -16,9 +16,10 @@ export interface Props {
 }
 
 export default function RecoveryDialog({ open, handleClose }: Props): JSX.Element {
-    const [shadowAddress, setShadowAddress] = React.useState("")
-    const [recoverParams, setRecoverParams] = React.useState("")
-    const [saltHash, setSaltHash] = React.useState<string | undefined>()
+    const [processing, setProcessing] = useState(false)
+    const [shadowAddress, setShadowAddress] = useState("")
+    const [recoverParams, setRecoverParams] = useState("")
+    const [saltHash, setSaltHash] = useState<string | undefined>()
     useEffect(() => {
         setSaltHash(undefined)
         const loadSaltHash = async() => {
@@ -35,6 +36,7 @@ export default function RecoveryDialog({ open, handleClose }: Props): JSX.Elemen
     const buildRecoverData = useCallback(async() => {
         setRecoverParams("")
         if (!saltHash) return
+        setProcessing(true)
         try {
             const owner = ethers.getAddress(localStorage.getItem("owner")!!)
             const entropy = localStorage.getItem("entropy")!!
@@ -54,6 +56,8 @@ export default function RecoveryDialog({ open, handleClose }: Props): JSX.Elemen
             console.log(encodeRecovery(registerData.commit, saltHash, ethers.ZeroAddress, owner, ethers.parseEther("0.001"), registerData.proof))
         } catch (e) {
             console.error(e)
+        } finally {
+            setProcessing(false)
         }
     }, [saltHash])
 
@@ -78,7 +82,8 @@ export default function RecoveryDialog({ open, handleClose }: Props): JSX.Elemen
                 {saltHash && (<Typography>{saltHash}</Typography>)}
                 {recoverParams && (<Typography>{recoverParams}</Typography>)}
                 <DialogActions>
-                    <Button size="small" onClick={() => buildRecoverData()}>Recover</Button>
+                    {!processing && <Button size="small" onClick={() => buildRecoverData()}>Recover</Button>}
+                    {processing && <CircularProgress size={24} />}
                 </DialogActions>
             </DialogContent>
         </Dialog>

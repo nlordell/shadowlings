@@ -1,9 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import logo from './logo.svg';
-import { ethers } from 'ethers';
 import './App.css';
 import LocationDialog from './setup/LocationDialog';
-import { Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import OwnerDialog from './setup/OwnerDialog';
 import ShadowList from './shadows/ShadowList';
 
@@ -38,8 +36,10 @@ function App() {
         localStorage.setItem("owner", owner)
         setOwner(owner)
       }}/>
-      {!!entropy && (<Typography>Selected Entropy: {entropy} (<a onClick={clearEntropy}>clear</a>)</Typography>)}
-      {!!owner && (<Typography>Selected Owner: {owner} (<a onClick={clearOwner}>clear</a>)</Typography>)}
+      <Stack direction="row" spacing={2} width={"100%"} style={{justifyContent: "center"}}>
+        {!!entropy && (<Typography>Selected Entropy: {entropy} (<a onClick={clearEntropy}>clear</a>)</Typography>)}
+        {!!owner && (<Typography>Selected Owner: {owner} (<a onClick={clearOwner}>clear</a>)</Typography>)}
+      </Stack>
       {!!entropy && !!owner && (<ShadowList owner={owner} entropy={entropy} />)}
     </div>
   );

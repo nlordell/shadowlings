@@ -1,21 +1,12 @@
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
-import CardContent from '@mui/material/CardContent';
 import TextField from '@mui/material/TextField';
-import { Button, CardActionArea, DialogActions } from '@mui/material';
-import { encodeBase32 } from 'geohashing';
-import React, { useCallback, useEffect } from 'react';
+import { Button, CircularProgress, DialogActions } from '@mui/material';
+import { useCallback, useState } from 'react';
 import { ethers } from 'ethers';
 import { buildSignature, createWithdrawData } from '../utils/proof';
 import { globalBundler } from '../utils/userops';
-
-interface OwnerResult {
-    owner: string
-}
 
 export interface Props {
     open: boolean,
@@ -27,11 +18,13 @@ export interface Props {
 }
 
 export default function WithdrawDialog({ open, handleClose, shadowAddress, salt, token }: Props): JSX.Element {
-    const [target, setTarget] = React.useState("")
-    const [amount, setAmount] = React.useState("")
+    const [processing, setProcessing] = useState(false)
+    const [target, setTarget] = useState("")
+    const [amount, setAmount] = useState("")
 
 
     const generateProof = useCallback(async(target: string, amount: string) => {
+        setProcessing(true)
         try {
             const owner = ethers.getAddress(localStorage.getItem("owner")!!)
             const entropy = localStorage.getItem("entropy")!!
@@ -52,8 +45,10 @@ export default function WithdrawDialog({ open, handleClose, shadowAddress, salt,
             handleClose()
         } catch (e) {
             console.error(e)
+        } finally {
+            setProcessing(false)
         }
-    }, [shadowAddress, salt, token, handleClose, setTarget, setAmount])
+    }, [shadowAddress, salt, token, handleClose, setTarget, setAmount, setProcessing])
 
     return (
         <Dialog 
@@ -81,7 +76,8 @@ export default function WithdrawDialog({ open, handleClose, shadowAddress, salt,
                     style={{ margin: "8px" }}
                     />
                 <DialogActions>
-                    <Button size="small" onClick={() => generateProof(target, amount)}>Submit</Button>
+                    {!processing && <Button size="small" onClick={() => generateProof(target, amount)}>Submit</Button>}
+                    {processing && <CircularProgress size={24} />}
                 </DialogActions>
             </DialogContent>
         </Dialog>

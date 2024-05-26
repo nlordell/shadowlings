@@ -24,7 +24,7 @@ const globalMimc = async (): Promise<MimcSponge> => {
 
 export const hash = async (...parts: string[]): Promise<string> => {
   const mimc = await globalMimc();
-  return `0x${mimc.F.toString(mimc.multiHash(parts), 16)}`;
+  return `0x${mimc.F.toString(mimc.multiHash(parts), 16).padStart(64, '0')}`;
 };
 
 export function fromHex(a: string) {

@@ -5,6 +5,7 @@ import { Shadow } from './ShadowList';
 import { useEffect, useState } from 'react';
 import RegisterDialog from '../transact/RegisterDialog';
 import { queryRecoveryRegistrations } from '../utils/web3';
+import AddressView from '../status/AddressView';
 
 export interface Props {
     owner: string,
@@ -23,11 +24,10 @@ export default function ShadowEntry({ shadow, onRemove }: Props): JSX.Element {
             setSaltHash(registeredSaltHash)
         }
         check(shadow.address)
-    }, [shadow, setSaltHash])
+    }, [shadow, showRegisterDialog, setSaltHash])
 
     return (<Card style={{ margin: "8px" }}>
-        <Typography>Address: {shadow.address}</Typography>
-        <Typography>Salt: {shadow.salt}</Typography>
+        <AddressView address={shadow.address} size={60} info={`Salt: ${shadow.salt}`} />
         <BalanceView address={shadow.address} salt={shadow.salt} />
         <CardActions>
             <Button size="small" onClick={() => onRemove(shadow.address)}>Remove</Button>

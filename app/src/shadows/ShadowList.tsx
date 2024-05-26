@@ -1,12 +1,11 @@
-import Card from '@mui/material/Card';
 import { Button, CardActions, Paper, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { SignatureLike, ethers } from 'ethers';
-import BalanceView from '../status/BalanceView';
 import { calculateCommit } from '../utils/proof';
 import { SHADOWLING_ADDRESS } from '../utils/invoker';
 import ShadowEntry from './ShadowEntry';
 import RecoveryDialog from '../transact/RecoveryDialog';
+import Grid from '@mui/material/Unstable_Grid2/Grid2';
 
 const FIXED_SIGNATURE: SignatureLike = {
     yParity: 1,
@@ -36,7 +35,7 @@ const loadPersistedShadows = (owner: string): Array<Shadow> => {
 export const recoverShadowlingAddress = (commit: string, invoker: string = SHADOWLING_ADDRESS, chainid: number = CHAIN_ID): string => {
     const authHash = ethers.solidityPackedKeccak256(
         ["uint8", "uint256", "uint256", "uint256", "bytes32"],
-        ["0x04", chainid, 0, invoker, ethers.zeroPadBytes(commit, 32)]
+        ["0x04", chainid, 0, invoker, commit]
     )
     return ethers.recoverAddress(
         authHash, FIXED_SIGNATURE
@@ -74,6 +73,8 @@ export default function ShadowList({ owner, entropy }: Props): JSX.Element {
     return (<Paper style={{padding: "8px", maxWidth: "800px", margin: "0px auto"}} elevation={0}>
         <RecoveryDialog open={showRecoveryDialog} handleClose={() => setShowRecoveryDialog(false)}/>
         <Typography>Shadows: <Button onClick={addShadow}>Add</Button><Button onClick={() => setShowRecoveryDialog(true)}>Recover</Button></Typography>
-        {shadows.map((shadow) => (<ShadowEntry owner={owner} shadow={shadow} onRemove={removeShadow}/>))}
+        <Grid container spacing={2}>
+            {shadows.map((shadow) => (<Grid xs={6}><ShadowEntry owner={owner} shadow={shadow} onRemove={removeShadow}/></Grid>))}
+        </Grid>
     </Paper>)
 }
